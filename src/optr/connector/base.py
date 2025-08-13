@@ -4,7 +4,7 @@ Base connector interface
 
 from abc import ABC, abstractmethod
 
-from ..types import State
+from ..operator.types import State
 
 
 class BaseConnector(ABC):

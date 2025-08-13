@@ -5,7 +5,7 @@ Base operator class
 from typing import Any
 
 from ..connector.base import BaseConnector
-from ..types import State
+from .types import State
 
 
 class Operator:

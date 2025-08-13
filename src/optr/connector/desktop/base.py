@@ -4,7 +4,7 @@ Base desktop connector
 
 from abc import abstractmethod
 
-from ...types import State
+from ...operator.types import State
 from ..base import BaseConnector
 
 

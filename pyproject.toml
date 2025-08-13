@@ -24,6 +24,7 @@ dependencies = [
     "pyautogui",
     "opencv-python",
     "mujoco",
+    "torch>=2.8.0",
 ]
 
 [project.urls]
