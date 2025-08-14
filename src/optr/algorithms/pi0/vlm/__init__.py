@@ -7,4 +7,4 @@ from .paligemma import PaliGemmaVLM
 from .simple import SimpleVLM
 from .tokenizer import VLMTokenizer
 
-__all__ = ['VLMInterface', 'SimpleVLM', 'PaliGemmaVLM', 'VLMTokenizer']
+__all__ = ["VLMInterface", "SimpleVLM", "PaliGemmaVLM", "VLMTokenizer"]

@@ -59,7 +59,7 @@ class VLMInterface(ABC):
     @property
     def device(self) -> torch.device:
         """Get device the model is on"""
-        return torch.device('cpu')
+        return torch.device("cpu")
 
     @property
     def embedding_dim(self) -> int:

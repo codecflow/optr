@@ -22,7 +22,7 @@ class HeadlessRunner:
         self.pipe_output = None
 
         # Timing for outputs (default 30 fps)
-        fps = self.config.get('video', {}).get('fps', 30)
+        fps = self.config.get("video", {}).get("fps", 30)
         self.frame_duration = 1.0 / fps
         self.last_frame_time = 0.0
 
@@ -34,17 +34,17 @@ class HeadlessRunner:
         self.simulation.setup()
 
         # Setup renderer and pipe output if enabled
-        pipe_config = self.config.get('pipe', {})
-        if pipe_config.get('enabled', False):
+        pipe_config = self.config.get("pipe", {})
+        if pipe_config.get("enabled", False):
             model = self.simulation.get_model()
             data = self.simulation.get_data()
-            video_config = self.config.get('video', {})
+            video_config = self.config.get("video", {})
             self.renderer = Renderer(model, data, video_config)
             self.pipe_output = PipeOutput(self.renderer, pipe_config)
 
             print(f"Pipe Output: {pipe_config.get('path', '/tmp/robot.pipe')}")
-            width = video_config.get('width', 640)
-            height = video_config.get('height', 480)
+            width = video_config.get("width", 640)
+            height = video_config.get("height", 480)
             print(f"Format: RGB24 {width}x{height}")
 
     def run(self) -> None:
@@ -59,7 +59,7 @@ class HeadlessRunner:
         sim_timestep = 0.002  # From OnnxSimulation
         steps_per_frame = int(self.frame_duration / sim_timestep)
 
-        fps = self.config.get('video', {}).get('fps', 30)
+        fps = self.config.get("video", {}).get("fps", 30)
         print(f"Steps per frame: {steps_per_frame}")
         print(f"Target FPS: {fps}")
 

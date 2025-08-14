@@ -42,5 +42,13 @@ exclude = ["examples/", "tests/", "uv.lock", "ruff.toml"]
 check = "ruff check src"
 format = "ruff format src"
 
+[project.optional-dependencies]
+solana = [
+    "solana>=0.30.0",
+    "anchorpy>=0.18.0",
+    "base58>=2.1.0",
+    "msgpack>=1.0.0",
+]
+
 [dependency-groups]
 dev = ["ruff", "taskipy"]

@@ -19,7 +19,7 @@ class PaliGemmaVLM(VLMInterface):
     def __init__(
         self,
         model_name: str = "google/paligemma-3b-pt-224",
-        device: str = 'cpu',
+        device: str = "cpu",
         use_auth_token: bool = True,
         embedding_dim: int = 2048,
     ):
@@ -56,8 +56,12 @@ class PaliGemmaVLM(VLMInterface):
             # Projection layers to match embedding dim
             actual_dim = self.model.config.text_config.hidden_size
             if actual_dim != embedding_dim:
-                self.image_projection = nn.Linear(actual_dim, embedding_dim).to(self._device)
-                self.text_projection = nn.Linear(actual_dim, embedding_dim).to(self._device)
+                self.image_projection = nn.Linear(actual_dim, embedding_dim).to(
+                    self._device
+                )
+                self.text_projection = nn.Linear(actual_dim, embedding_dim).to(
+                    self._device
+                )
             else:
                 self.image_projection = nn.Identity()
                 self.text_projection = nn.Identity()

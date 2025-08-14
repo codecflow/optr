@@ -2,7 +2,6 @@
 Simple VLM implementation using basic encoders
 """
 
-
 import torch
 import torch.nn as nn
 import torchvision.transforms as T
@@ -21,7 +20,7 @@ class SimpleVLM(VLMInterface):
         image_channels: int = 3,
         text_vocab_size: int = 10000,
         embedding_dim: int = 512,
-        device: str = 'cpu',
+        device: str = "cpu",
     ):
         self._device = torch.device(device)
         self._embedding_dim = embedding_dim
@@ -42,7 +41,9 @@ class SimpleVLM(VLMInterface):
         ).to(self._device)
 
         # Simple embedding for text
-        self.text_embedding = nn.Embedding(text_vocab_size, embedding_dim).to(self._device)
+        self.text_embedding = nn.Embedding(text_vocab_size, embedding_dim).to(
+            self._device
+        )
         self.text_encoder = nn.LSTM(
             embedding_dim, embedding_dim // 2, bidirectional=True, batch_first=True
         ).to(self._device)
@@ -55,10 +56,12 @@ class SimpleVLM(VLMInterface):
         ).to(self._device)
 
         # Image preprocessing
-        self.image_transform = T.Compose([
-            T.Resize((image_size, image_size)),
-            T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        ])
+        self.image_transform = T.Compose(
+            [
+                T.Resize((image_size, image_size)),
+                T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            ]
+        )
 
     @property
     def device(self) -> torch.device:
