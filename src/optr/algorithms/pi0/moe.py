@@ -19,7 +19,7 @@ class Expert(nn.Module):
         input_dim: int,
         hidden_dim: int,
         output_dim: int | None = None,
-        activation: str = 'gelu',
+        activation: str = "gelu",
     ):
         super().__init__()
 
@@ -35,11 +35,11 @@ class Expert(nn.Module):
         self.fc2 = nn.Linear(hidden_dim, output_dim)
 
         # Activation
-        if activation == 'gelu':
+        if activation == "gelu":
             self.activation = nn.GELU()
-        elif activation == 'relu':
+        elif activation == "relu":
             self.activation = nn.ReLU()
-        elif activation == 'silu':
+        elif activation == "silu":
             self.activation = nn.SiLU()
         else:
             self.activation = nn.GELU()
@@ -143,7 +143,7 @@ class MixtureOfExperts(nn.Module):
         expert_dim: int = 512,
         output_dim: int | None = None,
         top_k: int = 2,
-        routing_method: str = 'learned',  # 'learned', 'random', 'uniform'
+        routing_method: str = "learned",  # 'learned', 'random', 'uniform'
     ):
         super().__init__()
 
@@ -155,13 +155,12 @@ class MixtureOfExperts(nn.Module):
         self.routing_method = routing_method
 
         # Create experts
-        self.experts = nn.ModuleList([
-            Expert(input_dim, expert_dim, self.output_dim)
-            for _ in range(num_experts)
-        ])
+        self.experts = nn.ModuleList(
+            [Expert(input_dim, expert_dim, self.output_dim) for _ in range(num_experts)]
+        )
 
         # Create router
-        if routing_method == 'learned':
+        if routing_method == "learned":
             self.router = Router(input_dim, num_experts, top_k)
         else:
             self.router = None
@@ -181,11 +180,11 @@ class MixtureOfExperts(nn.Module):
         Returns:
             Output tensor [B, ..., D_out]
         """
-        if self.routing_method == 'learned' and self.router is not None:
+        if self.routing_method == "learned" and self.router is not None:
             # Learned routing
             weights, indices = self.router(x, self.training)
             output = self._apply_experts(x, weights, indices)
-        elif self.routing_method == 'random':
+        elif self.routing_method == "random":
             # Random routing
             output = self._random_routing(x)
         else:
@@ -212,15 +211,14 @@ class MixtureOfExperts(nn.Module):
             Weighted expert outputs [B, ..., D_out]
         """
         output = torch.zeros(
-            *x.shape[:-1], self.output_dim,
-            device=x.device, dtype=x.dtype
+            *x.shape[:-1], self.output_dim, device=x.device, dtype=x.dtype
         )
 
         # Apply each selected expert
         for k in range(self.top_k):
             for expert_idx in range(self.num_experts):
                 # Find where this expert is selected
-                mask = (indices[..., k] == expert_idx)
+                mask = indices[..., k] == expert_idx
 
                 if mask.any():
                     # Get inputs for this expert
@@ -247,12 +245,11 @@ class MixtureOfExperts(nn.Module):
         """
         # Randomly select top-k experts
         x.shape[0]
-        indices = torch.randperm(self.num_experts)[:self.top_k]
+        indices = torch.randperm(self.num_experts)[: self.top_k]
         weights = torch.ones(self.top_k) / self.top_k
 
         output = torch.zeros(
-            *x.shape[:-1], self.output_dim,
-            device=x.device, dtype=x.dtype
+            *x.shape[:-1], self.output_dim, device=x.device, dtype=x.dtype
         )
 
         for i, idx in enumerate(indices):
@@ -272,8 +269,7 @@ class MixtureOfExperts(nn.Module):
             Output tensor
         """
         output = torch.zeros(
-            *x.shape[:-1], self.output_dim,
-            device=x.device, dtype=x.dtype
+            *x.shape[:-1], self.output_dim, device=x.device, dtype=x.dtype
         )
 
         for expert in self.experts:
@@ -292,7 +288,7 @@ class MultiModalMoE(nn.Module):
         modality_dims: dict[str, int],
         hidden_dim: int = 512,
         output_dim: int | None = None,
-        fusion_method: str = 'moe',  # 'moe', 'concat', 'attention'
+        fusion_method: str = "moe",  # 'moe', 'concat', 'attention'
     ):
         super().__init__()
 
@@ -302,13 +298,12 @@ class MultiModalMoE(nn.Module):
         self.fusion_method = fusion_method
 
         # Create modality-specific encoders
-        self.encoders = nn.ModuleDict({
-            name: nn.Linear(dim, hidden_dim)
-            for name, dim in modality_dims.items()
-        })
+        self.encoders = nn.ModuleDict(
+            {name: nn.Linear(dim, hidden_dim) for name, dim in modality_dims.items()}
+        )
 
         # Create fusion mechanism
-        if fusion_method == 'moe':
+        if fusion_method == "moe":
             # MoE for fusion
             self.fusion = MixtureOfExperts(
                 input_dim=hidden_dim,
@@ -316,7 +311,7 @@ class MultiModalMoE(nn.Module):
                 expert_dim=hidden_dim * 2,
                 output_dim=self.output_dim,
             )
-        elif fusion_method == 'concat':
+        elif fusion_method == "concat":
             # Simple concatenation + projection
             total_dim = hidden_dim * len(modality_dims)
             self.fusion = nn.Sequential(
@@ -324,11 +319,9 @@ class MultiModalMoE(nn.Module):
                 nn.GELU(),
                 nn.Linear(hidden_dim, self.output_dim),
             )
-        elif fusion_method == 'attention':
+        elif fusion_method == "attention":
             # Cross-attention fusion
-            self.fusion = CrossModalAttention(
-                hidden_dim, self.output_dim
-            )
+            self.fusion = CrossModalAttention(hidden_dim, self.output_dim)
         else:
             raise ValueError(f"Unknown fusion method: {fusion_method}")
 
@@ -354,11 +347,11 @@ class MultiModalMoE(nn.Module):
                 encoded[name] = self.encoders[name](x)
 
         # Apply fusion
-        if self.fusion_method == 'moe':
+        if self.fusion_method == "moe":
             # Stack and apply MoE
             stacked = torch.stack(list(encoded.values()), dim=1)
             output = self.fusion(stacked).mean(dim=1)
-        elif self.fusion_method == 'concat':
+        elif self.fusion_method == "concat":
             # Concatenate and project
             concatenated = torch.cat(list(encoded.values()), dim=-1)
             output = self.fusion(concatenated)

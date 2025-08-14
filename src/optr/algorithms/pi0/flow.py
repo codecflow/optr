@@ -127,7 +127,7 @@ def flow_matching_loss(
     Returns:
         Flow matching loss
     """
-    loss = F.mse_loss(predicted, target, reduction='none')
+    loss = F.mse_loss(predicted, target, reduction="none")
 
     if mask is not None:
         loss = loss * mask

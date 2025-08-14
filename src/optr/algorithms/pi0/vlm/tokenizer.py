@@ -2,7 +2,6 @@
 Tokenizer utilities for VLMs
 """
 
-
 import torch
 
 
@@ -27,10 +26,10 @@ class VLMTokenizer:
 
         # Simple word-to-id mapping
         self.word_to_id = {
-            '<pad>': pad_token_id,
-            '<unk>': unk_token_id,
-            '<bos>': bos_token_id,
-            '<eos>': eos_token_id,
+            "<pad>": pad_token_id,
+            "<unk>": unk_token_id,
+            "<bos>": bos_token_id,
+            "<eos>": eos_token_id,
         }
         self.id_to_word = {v: k for k, v in self.word_to_id.items()}
         self._next_id = 4
@@ -61,7 +60,7 @@ class VLMTokenizer:
         padding: bool = True,
         truncation: bool = True,
         add_special_tokens: bool = True,
-        return_tensors: str | None = 'pt',
+        return_tensors: str | None = "pt",
     ) -> dict:
         """
         Tokenize text
@@ -123,7 +122,7 @@ class VLMTokenizer:
             batch_masks.append(mask)
 
         # Convert to tensors if requested
-        if return_tensors == 'pt':
+        if return_tensors == "pt":
             input_ids = torch.tensor(batch_tokens, dtype=torch.long)
             attention_mask = torch.tensor(batch_masks, dtype=torch.long)
         else:
@@ -131,8 +130,8 @@ class VLMTokenizer:
             attention_mask = batch_masks
 
         return {
-            'input_ids': input_ids,
-            'attention_mask': attention_mask,
+            "input_ids": input_ids,
+            "attention_mask": attention_mask,
         }
 
     def decode(
@@ -154,15 +153,16 @@ class VLMTokenizer:
         if isinstance(token_ids, torch.Tensor):
             if token_ids.dim() == 2:
                 # Batch of sequences
-                return [self._decode_single(ids.tolist(), skip_special_tokens)
-                        for ids in token_ids]
+                return [
+                    self._decode_single(ids.tolist(), skip_special_tokens)
+                    for ids in token_ids
+                ]
             else:
                 # Single sequence
                 return self._decode_single(token_ids.tolist(), skip_special_tokens)
         elif isinstance(token_ids[0], list):
             # Batch of sequences
-            return [self._decode_single(ids, skip_special_tokens)
-                    for ids in token_ids]
+            return [self._decode_single(ids, skip_special_tokens) for ids in token_ids]
         else:
             # Single sequence
             return self._decode_single(token_ids, skip_special_tokens)
@@ -199,9 +199,9 @@ class VLMTokenizer:
             else:
                 # Unknown token
                 if not skip_special_tokens:
-                    words.append('<unk>')
+                    words.append("<unk>")
 
-        return ' '.join(words)
+        return " ".join(words)
 
     def batch_decode(
         self,
@@ -224,10 +224,7 @@ class VLMTokenizer:
         return [self._decode_single(ids, skip_special_tokens) for ids in token_ids]
 
 
-def create_tokenizer(
-    tokenizer_type: str = 'simple',
-    **kwargs
-) -> VLMTokenizer:
+def create_tokenizer(tokenizer_type: str = "simple", **kwargs) -> VLMTokenizer:
     """
     Create a tokenizer
 
@@ -238,7 +235,7 @@ def create_tokenizer(
     Returns:
         Tokenizer instance
     """
-    if tokenizer_type == 'simple':
+    if tokenizer_type == "simple":
         return VLMTokenizer(**kwargs)
     else:
         raise ValueError(f"Unknown tokenizer type: {tokenizer_type}")

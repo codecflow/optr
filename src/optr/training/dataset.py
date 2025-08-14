@@ -118,8 +118,7 @@ class Dataset:
             return None
 
         return action(
-            action_data.get("type", "unknown"),
-            **action_data.get("params", {})
+            action_data.get("type", "unknown"), **action_data.get("params", {})
         )
 
     def split(

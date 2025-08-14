@@ -50,5 +50,13 @@ check = "ruff check src"
 format = "ruff format src"
 test = "pytest src -v"
 
+[project.optional-dependencies]
+solana = [
+    "solana>=0.30.0",
+    "anchorpy>=0.18.0",
+    "base58>=2.1.0",
+    "msgpack>=1.0.0",
+]
+
 [dependency-groups]
 dev = ["pytest", "ruff", "taskipy"]

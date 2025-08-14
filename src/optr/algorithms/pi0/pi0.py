@@ -155,9 +155,9 @@ class PI0(Algorithm):
             ).to(self.device)
 
         # Action encoder
-        self.action_encoder = ActionEncoder(
-            self.action_dim, self.hidden_dim
-        ).to(self.device)
+        self.action_encoder = ActionEncoder(self.action_dim, self.hidden_dim).to(
+            self.device
+        )
 
         # Flow model for velocity prediction
         self.flow_model = create_flow_model(
@@ -235,7 +235,7 @@ class PI0(Algorithm):
                 params={
                     "values": first_action.tolist(),
                     "horizon": self.action_horizon,
-                }
+                },
             )
 
     async def train(
@@ -256,10 +256,10 @@ class PI0(Algorithm):
         # Initialize optimizer if needed
         if self.optimizer is None:
             self.optimizer = optim.AdamW(
-                list(self.flow_model.parameters()) +
-                list(self.action_encoder.parameters()) +
-                list(self.fusion.parameters()) +
-                list(self.proprio_encoder.parameters()),
+                list(self.flow_model.parameters())
+                + list(self.action_encoder.parameters())
+                + list(self.fusion.parameters())
+                + list(self.proprio_encoder.parameters()),
                 lr=self.learning_rate,
             )
 
@@ -300,7 +300,7 @@ class PI0(Algorithm):
             )
 
             # Target velocity
-            target_velocity = (target_actions.view(1, -1) - noise.view(1, -1))
+            target_velocity = target_actions.view(1, -1) - noise.view(1, -1)
 
             # Loss
             loss = flow_matching_loss(predicted_velocity, target_velocity)
@@ -313,10 +313,12 @@ class PI0(Algorithm):
             total_loss += loss.item()
 
             # Store pattern for fallback
-            self.stored_patterns.append({
-                "features": features.detach().cpu(),
-                "action": target_actions.detach().cpu(),
-            })
+            self.stored_patterns.append(
+                {
+                    "features": features.detach().cpu(),
+                    "action": target_actions.detach().cpu(),
+                }
+            )
 
         metrics["avg_loss"] = total_loss / len(data) if data else 0
 
@@ -341,7 +343,9 @@ class PI0(Algorithm):
 
                     val_loss += F.mse_loss(pred_tensor, target_actions).item()
 
-            metrics["validation_loss"] = val_loss / len(validation_data) if validation_data else 0
+            metrics["validation_loss"] = (
+                val_loss / len(validation_data) if validation_data else 0
+            )
 
         self.is_trained = True
         return metrics
@@ -509,6 +513,6 @@ class PI0(Algorithm):
             last = tensor[-1:].expand(self.action_horizon - tensor.shape[0], -1)
             tensor = torch.cat([tensor, last], dim=0)
         elif tensor.shape[0] > self.action_horizon:
-            tensor = tensor[:self.action_horizon]
+            tensor = tensor[: self.action_horizon]
 
         return tensor
