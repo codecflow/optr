@@ -5,7 +5,8 @@ Base class for all algorithms
 from abc import ABC, abstractmethod
 from typing import Any
 
-from ..operator.types import Action, State
+from ..operator.action import Action
+from ..operator.types import State
 
 
 class Algorithm(ABC):

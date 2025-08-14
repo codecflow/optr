@@ -7,7 +7,8 @@ import time
 from dataclasses import dataclass, field
 from typing import Any
 
-from ..types import Action, State
+from ..operator.action import Action
+from ..operator.types import State
 
 
 @dataclass
