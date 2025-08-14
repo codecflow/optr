@@ -4,7 +4,8 @@ Critic module for evaluating actions and providing feedback
 
 from typing import Any
 
-from ..types import Action, State
+from ..operator.action import Action, action
+from ..operator.types import State
 
 
 class Critic:
@@ -114,7 +115,7 @@ class Critic:
             corrected_params = self._adjust_parameters(
                 failed_action.params, failure_analysis["details"]
             )
-            return Action(type=failed_action.type, params=corrected_params)
+            return action(failed_action['type'], **corrected_params)
 
         return None
 

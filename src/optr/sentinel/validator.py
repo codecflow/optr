@@ -4,7 +4,7 @@ Generic validator for action parameters
 
 from typing import Any
 
-from ..types import Action
+from ..operator.action import Action
 
 
 class Validator:

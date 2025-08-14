@@ -13,7 +13,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-from ...operator.types import Action, State
+from ...operator.action import Action
+from ...operator.types import State
 from ..base import Algorithm
 from .flow import (
     SinusoidalEmbedding,
