@@ -4,7 +4,8 @@ Safety guard for action validation and recovery
 
 from collections.abc import Callable
 
-from ..types import Action, State
+from ..operator.action import Action
+from ..operator.types import State
 
 
 class Guard:

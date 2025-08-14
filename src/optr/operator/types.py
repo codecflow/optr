@@ -23,30 +23,6 @@ class State:
 
 
 @dataclass
-class Action:
-    """Action to be executed"""
-
-    type: str
-    params: dict[str, Any]
-    timeout: float = 30.0
-
-    @classmethod
-    def click(cls, x: int, y: int, **kwargs) -> "Action":
-        """Create click action"""
-        return cls(type="click", params={"x": x, "y": y, **kwargs})
-
-    @classmethod
-    def type_text(cls, text: str, **kwargs) -> "Action":
-        """Create type text action"""
-        return cls(type="type", params={"text": text, **kwargs})
-
-    @classmethod
-    def key(cls, key: str, **kwargs) -> "Action":
-        """Create key press action"""
-        return cls(type="key", params={"key": key, **kwargs})
-
-
-@dataclass
 class Result:
     """Action execution result"""
 

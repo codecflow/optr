@@ -9,7 +9,8 @@ from typing import Any
 import numpy as np
 
 from ..ledger import Episode
-from ..types import Action, State
+from ..operator.action import Action, action
+from ..operator.types import State
 
 
 class Dataset:
@@ -116,9 +117,9 @@ class Dataset:
         if not action_data:
             return None
 
-        return Action(
-            type=action_data.get("type", "unknown"),
-            params=action_data.get("params", {}),
+        return action(
+            action_data.get("type", "unknown"),
+            **action_data.get("params", {})
         )
 
     def split(

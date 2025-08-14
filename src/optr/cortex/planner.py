@@ -6,7 +6,8 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable
 from typing import Any
 
-from ..operator.types import Action, State
+from ..operator.action import Action
+from ..operator.types import State
 
 
 class PlannerBase(ABC):

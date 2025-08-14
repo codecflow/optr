@@ -6,7 +6,8 @@ import json
 from pathlib import Path
 from typing import Any
 
-from ...types import Action, State
+from ...operator.action import Action
+from ...operator.types import State
 from ..base import Algorithm
 
 

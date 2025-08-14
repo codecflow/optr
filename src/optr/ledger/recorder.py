@@ -6,7 +6,8 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from ..types import Action, State
+from ..operator.action import Action, action
+from ..operator.types import State
 from .episode import Episode
 
 
@@ -181,7 +182,7 @@ class Recorder:
                 callback = self.replay_callbacks[action_type]
                 try:
                     # Recreate action
-                    action = Action(type=action_type, params=step["action"]["params"])
+                    act = action(action_type, **step["action"]["params"])
 
                     # Execute callback
                     await callback(action)
