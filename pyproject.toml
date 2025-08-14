@@ -5,7 +5,14 @@ description = "Unified toolkit for building, training, and testing digital and p
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "CodecFlow Team", email = "team@codecflow.ai" }]
-keywords = ["operators", "automation", "robotics", "desktop", "simulation", "sdk"]
+keywords = [
+    "operators",
+    "automation",
+    "robotics",
+    "desktop",
+    "simulation",
+    "sdk",
+]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -24,7 +31,7 @@ dependencies = [
     "pyautogui",
     "opencv-python",
     "mujoco",
-    "torch>=2.8.0",
+    "torch",
 ]
 
 [project.urls]
@@ -41,6 +48,7 @@ exclude = ["examples/", "tests/", "uv.lock", "ruff.toml"]
 [tool.taskipy.tasks]
 check = "ruff check src"
 format = "ruff format src"
+test = "pytest src -v"
 
 [project.optional-dependencies]
 solana = [
@@ -51,4 +59,4 @@ solana = [
 ]
 
 [dependency-groups]
-dev = ["ruff", "taskipy"]
+dev = ["pytest", "ruff", "taskipy"]
