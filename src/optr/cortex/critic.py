@@ -115,7 +115,7 @@ class Critic:
             corrected_params = self._adjust_parameters(
                 failed_action.params, failure_analysis["details"]
             )
-            return action(failed_action['type'], **corrected_params)
+            return action(failed_action["type"], **corrected_params)
 
         return None
 
@@ -162,10 +162,10 @@ class Critic:
         risks = []
 
         # Check for potentially destructive actions
-        for action in plan:
-            if action.type in ["delete", "remove", "clear"]:
+        for act in plan:
+            if act.type in ["delete", "remove", "clear"]:
                 risks.append(
-                    {"action": action, "risk_type": "data_loss", "severity": "high"}
+                    {"action": act, "risk_type": "data_loss", "severity": "high"}
                 )
 
         return risks

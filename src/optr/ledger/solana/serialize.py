@@ -8,7 +8,7 @@ from typing import Any
 
 import msgpack
 
-from ...operator.types import Action
+from ...operator.action import Action
 
 
 def compress_action(action: Action | dict[str, Any]) -> bytes:
@@ -16,21 +16,19 @@ def compress_action(action: Action | dict[str, Any]) -> bytes:
     Compress action for efficient storage
 
     Args:
-        action: Action instance or dict
+        action: Action dict (with 'type' field)
 
     Returns:
         Compressed bytes
 
     Example:
-        compressed = compress_action(action)
+        from optr.operator.action import action
+        a = action('click', x=100, y=200)
+        compressed = compress_action(a)
         # Store compressed data on-chain
     """
-    if isinstance(action, Action):
-        data = {"type": action.type, "params": action.params}
-    else:
-        data = action
-
-    return msgpack.packb(data, use_bin_type=True)
+    # Action is now a TypedDict, which is just a dict at runtime
+    return msgpack.packb(action, use_bin_type=True)
 
 
 def decompress_action(data: bytes) -> dict[str, Any]:
@@ -45,7 +43,7 @@ def decompress_action(data: bytes) -> dict[str, Any]:
 
     Example:
         action_dict = decompress_action(compressed_data)
-        action = Action(**action_dict)
+        # action_dict is ready to use as an Action
     """
     return msgpack.unpackb(data, raw=False)
 
@@ -61,16 +59,14 @@ def hash_action(action: Action | dict[str, Any]) -> str:
         Hex string hash
 
     Example:
-        action_hash = hash_action(action)
+        from optr.operator.action import action
+        a = action('click', x=100, y=200)
+        action_hash = hash_action(a)
         # Store hash on-chain for verification
     """
-    if isinstance(action, Action):
-        data = {"type": action.type, "params": action.params}
-    else:
-        data = action
-
+    # Action is now a TypedDict, which is just a dict at runtime
     # Ensure consistent ordering
-    json_str = json.dumps(data, sort_keys=True)
+    json_str = json.dumps(action, sort_keys=True)
     return hashlib.sha256(json_str.encode()).hexdigest()
 
 

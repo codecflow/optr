@@ -182,7 +182,7 @@ class Recorder:
                 callback = self.replay_callbacks[action_type]
                 try:
                     # Recreate action
-                    act = action(action_type, **step["action"]["params"])
+                    action(action_type, **step["action"]["params"])
 
                     # Execute callback
                     await callback(action)
