@@ -8,3 +8,4 @@ wheels/
 .ruff_cache
 reference
 .env
+.pytest_cache
