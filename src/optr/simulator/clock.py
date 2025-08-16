@@ -6,13 +6,16 @@ import time
 class Clock:
     """Manages simulation timing and FPS control."""
 
-    def __init__(self, /, fps: int = 30, realtime: bool = True):
+    def __init__(self, /, fps: int | None = 30, realtime: bool = True):
         """Initialize clock with FPS and realtime settings.
 
         Args:
             fps: Target frames per second (None for no limit)
             realtime: Whether to sync with wall clock time
         """
+        if fps is not None and fps <= 0:
+            raise ValueError("FPS must be positive")
+        
         self.fps = fps
         self.realtime = realtime
         self.duration = 1.0 / fps if fps else 0

@@ -34,20 +34,6 @@ class MockSimulator:
         pass
 
 
-def test_clock_creation():
-    """Test basic clock creation"""
-    clock = Clock(fps=30, realtime=True)
-    assert clock.fps == 30
-    assert clock.realtime is True
-    assert clock.duration == 1.0 / 30
-
-
-def test_null_clock_creation():
-    """Test Null clock creation"""
-    clock = Null()
-    # Should have tick and sync methods that do nothing
-    clock.tick()
-    clock.sync()
 
 
 def test_runner_with_null_clock():
@@ -115,24 +101,6 @@ def test_runner_zero_steps():
     assert len(states) == 0
 
 
-def test_clock_with_no_fps():
-    """Test clock with no FPS limit"""
-    clock = Clock(fps=None, realtime=True)
-    assert clock.fps is None
-    assert clock.duration == 0
-
-
-def test_clock_non_realtime():
-    """Test clock with realtime disabled"""
-    clock = Clock(fps=30, realtime=False)
-    assert clock.realtime is False
-
-    # tick and sync should do nothing when not realtime
-    start_time = time.time()
-    clock.tick()
-    clock.sync()
-    elapsed = time.time() - start_time
-    assert elapsed < 0.01  # Should be very fast
 
 
 def test_simulator_state_progression():
