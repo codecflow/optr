@@ -1,33 +1,20 @@
-"""Base simulation interfaces and protocols."""
+"""MuJoCo simulation implementation."""
 
-from typing import Any, Protocol
+from typing import NamedTuple, Protocol
 
 import mujoco
 
+from ..simulation import Simulation as BaseSimulation
 
-class Simulation(Protocol):
-    """Protocol for self-contained simulation definitions."""
 
-    def setup(self) -> None:
-        """Setup the simulation (load model, create controllers, etc.)."""
-        ...
+class State(NamedTuple):
+    """MuJoCo state with model and data."""
 
-    def step(self, n_steps: int = 1) -> None:
-        """Step the simulation forward."""
-        ...
+    model: mujoco.MjModel
+    data: mujoco.MjData
 
-    def get_model(self) -> mujoco.MjModel:
-        """Get the MuJoCo model."""
-        ...
 
-    def get_data(self) -> mujoco.MjData:
-        """Get the MuJoCo data."""
-        ...
+class Simulation(BaseSimulation[State], Protocol):
+    """MuJoCo simulation protocol."""
 
-    def cleanup(self) -> None:
-        """Clean up simulation resources."""
-        ...
-
-    def get_status(self) -> dict[str, Any]:
-        """Get simulation status for monitoring."""
-        ...
+    ...

@@ -3,7 +3,7 @@ name = "optr"
 version = "0.0.0a2"
 description = "Unified toolkit for building, training, and testing digital and physical operators."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 authors = [{ name = "CodecFlow Team", email = "team@codecflow.ai" }]
 keywords = [
     "operators",
@@ -32,6 +32,7 @@ dependencies = [
     "opencv-python",
     "mujoco",
     "torch",
+    "onnxruntime>=1.22.1",
 ]
 
 [project.urls]
