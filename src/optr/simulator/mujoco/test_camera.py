@@ -54,7 +54,7 @@ def test_list_empty_cameras():
 def test_find_existing_camera():
     """Test finding camera by name."""
     model = MockModel(["front", "back", "side"])
-    
+
     assert find(model, "front") == 0
     assert find(model, "back") == 1
     assert find(model, "side") == 2
@@ -63,7 +63,7 @@ def test_find_existing_camera():
 def test_find_nonexistent_camera():
     """Test finding camera that doesn't exist."""
     model = MockModel(["front", "back"])
-    
+
     assert find(model, "nonexistent") is None
     assert find(model, "top") is None
 
@@ -71,7 +71,7 @@ def test_find_nonexistent_camera():
 def test_find_case_sensitive():
     """Test that camera name search is case-sensitive."""
     model = MockModel(["Front", "BACK"])
-    
+
     assert find(model, "Front") == 0
     assert find(model, "front") is None
     assert find(model, "BACK") == 1
@@ -81,7 +81,7 @@ def test_find_case_sensitive():
 def test_resolve_with_string():
     """Test resolving camera name to ID."""
     model = MockModel(["front", "back", "side"])
-    
+
     assert resolve(model, "front") == 0
     assert resolve(model, "back") == 1
     assert resolve(model, "nonexistent") is None
@@ -90,7 +90,7 @@ def test_resolve_with_string():
 def test_resolve_with_int():
     """Test resolving camera ID (passthrough)."""
     model = MockModel(["front", "back"])
-    
+
     assert resolve(model, 0) == 0
     assert resolve(model, 1) == 1
     assert resolve(model, 5) == 5  # Should pass through even if invalid
@@ -99,14 +99,14 @@ def test_resolve_with_int():
 def test_resolve_with_none():
     """Test resolving None identifier."""
     model = MockModel(["front", "back"])
-    
+
     assert resolve(model, None) is None
 
 
 def test_resolve_with_invalid_type():
     """Test resolving with invalid identifier type."""
     model = MockModel(["front", "back"])
-    
+
     # Should pass through non-string types as-is
     assert resolve(model, 3.14) == 3.14
     assert resolve(model, []) == []

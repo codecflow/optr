@@ -34,8 +34,6 @@ class MockSimulator:
         pass
 
 
-
-
 def test_runner_with_null_clock():
     """Test runner with Null clock (fast execution)"""
     sim = MockSimulator()
@@ -99,8 +97,6 @@ def test_runner_zero_steps():
     sim = MockSimulator()
     states = list(run(sim, steps=0))
     assert len(states) == 0
-
-
 
 
 def test_simulator_state_progression():

@@ -15,7 +15,7 @@ class Clock:
         """
         if fps is not None and fps <= 0:
             raise ValueError("FPS must be positive")
-        
+
         self.fps = fps
         self.realtime = realtime
         self.duration = 1.0 / fps if fps else 0

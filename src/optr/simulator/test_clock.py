@@ -40,12 +40,12 @@ def test_clock_non_realtime():
 def test_clock_timing_control():
     """Test clock FPS timing control"""
     clock = Clock(fps=10, realtime=True)
-    
+
     start_time = time.time()
     clock.tick()
     clock.sync()
     elapsed = time.time() - start_time
-    
+
     expected_duration = 1.0 / 10  # 0.1 seconds
     assert elapsed >= expected_duration * 0.8  # Allow some tolerance
 
@@ -53,14 +53,14 @@ def test_clock_timing_control():
 def test_clock_fast_execution():
     """Test clock doesn't delay when execution is already slow"""
     clock = Clock(fps=1000, realtime=True)  # Very high FPS
-    
+
     start_time = time.time()
     clock.tick()
     # Simulate slow work
     time.sleep(0.01)
     clock.sync()
     elapsed = time.time() - start_time
-    
+
     # Should not add additional delay since work already took longer than frame time
     assert elapsed < 0.02
 
@@ -76,13 +76,13 @@ def test_null_clock_creation():
 def test_null_clock_performance():
     """Test Null clock has no timing overhead"""
     clock = Null()
-    
+
     start_time = time.time()
     for _ in range(100):
         clock.tick()
         clock.sync()
     elapsed = time.time() - start_time
-    
+
     assert elapsed < 0.01  # Should be very fast
 
 
