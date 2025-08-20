@@ -24,16 +24,7 @@ classifiers = [
     "Typing :: Typed",
 ]
 license = { text = "MIT" }
-dependencies = [
-    "numpy",
-    "pillow",
-    "mss",
-    "pyautogui",
-    "opencv-python",
-    "mujoco",
-    "torch",
-    "onnxruntime>=1.22.1",
-]
+dependencies = ["numpy", "pillow"]
 
 [project.urls]
 Repository = "https://github.com/codecflow/optr"
@@ -52,11 +43,23 @@ format = "ruff format src"
 test = "pytest src -v"
 
 [project.optional-dependencies]
+desktop = ["mss", "pyautogui"]
+vision = ["opencv-python"]
+simulation = ["mujoco"]
+ml = ["torch", "onnxruntime>=1.22.1"]
+streaming = ["pygobject>=3.52.3"]
 solana = [
     "solana>=0.30.0",
     "anchorpy>=0.18.0",
     "base58>=2.1.0",
     "msgpack>=1.0.0",
+]
+all = [
+    "optr[desktop]",
+    "optr[vision]",
+    "optr[simulation]",
+    "optr[ml]",
+    "optr[streaming]",
 ]
 
 [dependency-groups]

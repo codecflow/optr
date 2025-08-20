@@ -704,22 +704,42 @@ name = "optr"
 version = "0.0.0a2"
 source = { editable = "." }
 dependencies = [
-    { name = "mss" },
-    { name = "mujoco" },
     { name = "numpy" },
-    { name = "onnxruntime" },
-    { name = "opencv-python" },
     { name = "pillow" },
-    { name = "pyautogui" },
-    { name = "torch" },
 ]
 
 [package.optional-dependencies]
+all = [
+    { name = "mss" },
+    { name = "mujoco" },
+    { name = "onnxruntime" },
+    { name = "opencv-python" },
+    { name = "pyautogui" },
+    { name = "pygobject" },
+    { name = "torch" },
+]
+desktop = [
+    { name = "mss" },
+    { name = "pyautogui" },
+]
+ml = [
+    { name = "onnxruntime" },
+    { name = "torch" },
+]
+simulation = [
+    { name = "mujoco" },
+]
 solana = [
     { name = "anchorpy" },
     { name = "base58" },
     { name = "msgpack" },
     { name = "solana" },
+]
+streaming = [
+    { name = "pygobject" },
+]
+vision = [
+    { name = "opencv-python" },
 ]
 
 [package.dev-dependencies]
@@ -734,17 +754,23 @@ requires-dist = [
     { name = "anchorpy", marker = "extra == 'solana'", specifier = ">=0.18.0" },
     { name = "base58", marker = "extra == 'solana'", specifier = ">=2.1.0" },
     { name = "msgpack", marker = "extra == 'solana'", specifier = ">=1.0.0" },
-    { name = "mss" },
-    { name = "mujoco" },
+    { name = "mss", marker = "extra == 'desktop'" },
+    { name = "mujoco", marker = "extra == 'simulation'" },
     { name = "numpy" },
-    { name = "onnxruntime", specifier = ">=1.22.1" },
-    { name = "opencv-python" },
+    { name = "onnxruntime", marker = "extra == 'ml'", specifier = ">=1.22.1" },
+    { name = "opencv-python", marker = "extra == 'vision'" },
+    { name = "optr", extras = ["desktop"], marker = "extra == 'all'" },
+    { name = "optr", extras = ["ml"], marker = "extra == 'all'" },
+    { name = "optr", extras = ["simulation"], marker = "extra == 'all'" },
+    { name = "optr", extras = ["streaming"], marker = "extra == 'all'" },
+    { name = "optr", extras = ["vision"], marker = "extra == 'all'" },
     { name = "pillow" },
-    { name = "pyautogui" },
+    { name = "pyautogui", marker = "extra == 'desktop'" },
+    { name = "pygobject", marker = "extra == 'streaming'", specifier = ">=3.52.3" },
     { name = "solana", marker = "extra == 'solana'", specifier = ">=0.30.0" },
-    { name = "torch" },
+    { name = "torch", marker = "extra == 'ml'" },
 ]
-provides-extras = ["solana"]
+provides-extras = ["desktop", "vision", "simulation", "ml", "streaming", "solana", "all"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -883,6 +909,22 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/65/ff/cdae0a8c2118a0de74b6cf4cbcdcaf8fd25857e6c3f205ce4b1794b27814/PyAutoGUI-0.9.54.tar.gz", hash = "sha256:dd1d29e8fd118941cb193f74df57e5c6ff8e9253b99c7b04f39cfc69f3ae04b2", size = 61236, upload-time = "2023-05-24T20:11:32.972Z" }
 
 [[package]]
+name = "pycairo"
+version = "1.28.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/40/d9/412da520de9052b7e80bfc810ec10f5cb3dbfa4aa3e23c2820dc61cdb3d0/pycairo-1.28.0.tar.gz", hash = "sha256:26ec5c6126781eb167089a123919f87baa2740da2cca9098be8b3a6b91cc5fbc", size = 662477, upload-time = "2025-04-14T20:11:08.218Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a9/d7/206d7945aac5c6c889e7fea4011410d1311455a1d8dfce66106d8d700b7f/pycairo-1.28.0-cp312-cp312-win32.whl", hash = "sha256:c00cfbb7f30eb7ca1d48886712932e2d91e8835a8496f4e423878296ceba573e", size = 750594, upload-time = "2025-04-14T20:10:53.72Z" },
+    { url = "https://files.pythonhosted.org/packages/2e/ba/259fc9a4d3afdad1e5b9db52b9d8a5df67f70dd787167185e8ec8a1af007/pycairo-1.28.0-cp312-cp312-win_amd64.whl", hash = "sha256:d50d190f5033992b55050b9f337ee42a45c3568445d5e5d7987bab96c278d8a6", size = 841767, upload-time = "2025-04-14T20:10:56.711Z" },
+    { url = "https://files.pythonhosted.org/packages/c0/08/aa0903612ea0e8686ad6af58d4fb9cbab8ee0b0831201cddf7abd578d045/pycairo-1.28.0-cp312-cp312-win_arm64.whl", hash = "sha256:957e0340ee1c279d197d4f7cfa96f6d8b48e453eec711fca999748d752468ff4", size = 691687, upload-time = "2025-04-16T19:30:23.729Z" },
+    { url = "https://files.pythonhosted.org/packages/59/a7/c3e5ed55781dfe1b31eb4a2482aeae707671f3d36b0ea53a1722f4a3dfe9/pycairo-1.28.0-cp313-cp313-win32.whl", hash = "sha256:d13352429d8a08a1cb3607767d23d2fb32e4c4f9faa642155383980ec1478c24", size = 750594, upload-time = "2025-04-14T20:10:59.284Z" },
+    { url = "https://files.pythonhosted.org/packages/8b/1c/ebadd290748aff3b6bc35431114d41e7a42f40a4b988c2aaf2dfed5d8156/pycairo-1.28.0-cp313-cp313-win_amd64.whl", hash = "sha256:082aef6b3a9dcc328fa648d38ed6b0a31c863e903ead57dd184b2e5f86790140", size = 841774, upload-time = "2025-04-14T20:11:01.79Z" },
+    { url = "https://files.pythonhosted.org/packages/3e/ce/a3f5f1946613cd8a4654322b878c59f273c6e9b01dfadadd3f609070e0b9/pycairo-1.28.0-cp313-cp313-win_arm64.whl", hash = "sha256:026afd53b75291917a7412d9fe46dcfbaa0c028febd46ff1132d44a53ac2c8b6", size = 691675, upload-time = "2025-04-16T19:30:26.565Z" },
+    { url = "https://files.pythonhosted.org/packages/96/1b/1f5da2b2e44b33a5b269ff28af710b0a7903001d9cf8a40d00fc944a5092/pycairo-1.28.0-cp314-cp314-win32.whl", hash = "sha256:d0ab30585f536101ad6f09052fc3895e2a437ba57531ea07223d0e076248025d", size = 766699, upload-time = "2025-07-24T06:36:07.267Z" },
+    { url = "https://files.pythonhosted.org/packages/c9/91/1d5f18bd3ed469b1de8f83bfbf8bd67d23439f075151b66740fd35356190/pycairo-1.28.0-cp314-cp314-win_amd64.whl", hash = "sha256:94f2ed204999ab95a0671a0fa948ffbb9f3d6fb8731fe787917f6d022d9c1c0f", size = 868725, upload-time = "2025-07-24T06:36:09.597Z" },
+]
+
+[[package]]
 name = "pygetwindow"
 version = "0.0.9"
 source = { registry = "https://pypi.org/simple" }
@@ -899,6 +941,15 @@ sdist = { url = "https://files.pythonhosted.org/packages/b0/77/a5b8c569bf593b014
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c7/21/705964c7812476f378728bdf590ca4b771ec72385c533964653c68e86bdc/pygments-2.19.2-py3-none-any.whl", hash = "sha256:86540386c03d588bb81d44bc3928634ff26449851e99741617ecb9037ee5ec0b", size = 1225217, upload-time = "2025-06-21T13:39:07.939Z" },
 ]
+
+[[package]]
+name = "pygobject"
+version = "3.52.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pycairo" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/4a/36/fec530a313d3d48f12e112ac0a65ee3ccc87f385123a0493715609e8e99c/pygobject-3.52.3.tar.gz", hash = "sha256:00e427d291e957462a8fad659a9f9c8be776ff82a8b76bdf402f1eaeec086d82", size = 1235825, upload-time = "2025-03-16T18:22:57.1Z" }
 
 [[package]]
 name = "pyheck"
