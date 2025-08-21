@@ -38,8 +38,9 @@ build-backend = "hatchling.build"
 exclude = ["examples/", "tests/", "uv.lock", "ruff.toml"]
 
 [tool.taskipy.tasks]
-check = "ruff check src"
 format = "ruff format src"
+check = "ruff check src"
+typing = "mypy src"
 test = "pytest src -v"
 
 [project.optional-dependencies]

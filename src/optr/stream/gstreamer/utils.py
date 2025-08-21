@@ -1,7 +1,6 @@
 """Utility functions for GStreamer streaming."""
 
 import os
-from typing import Tuple
 
 
 def delete_socket(socket_path: str) -> None:
@@ -12,7 +11,7 @@ def delete_socket(socket_path: str) -> None:
         pass
 
 
-def get_format_info(format: str) -> Tuple[int, str]:
+def get_format_info(format: str) -> tuple[int, str]:
     """Get channels and GStreamer format string for a given format."""
     formats = {
         "RGB": (3, "RGB"),
@@ -21,7 +20,9 @@ def get_format_info(format: str) -> Tuple[int, str]:
         "NV12": (1, "NV12"),  # YUV format - 1.5 bytes per pixel but simplified to 1
     }
     if format not in formats:
-        raise ValueError(f"Unsupported format: {format}. Supported: {list(formats.keys())}")
+        raise ValueError(
+            f"Unsupported format: {format}. Supported: {list(formats.keys())}"
+        )
     return formats[format]
 
 
