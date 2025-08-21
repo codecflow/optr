@@ -7,7 +7,7 @@ from .simulation import Simulation, State
 
 
 def run(
-    sim: Simulation[State], /, steps: int = None, clock: Clock = None
+    sim: Simulation[State], /, steps: int | None = None, clock: Clock | None = None
 ) -> Generator[State, None, None]:
     """Run simulation with optional timing control.
 

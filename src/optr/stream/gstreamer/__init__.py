@@ -1,24 +1,38 @@
-"""GStreamer streaming utilities."""
+"""GStreamer streaming utilities - functional toolkit."""
 
 import gi
 
 gi.require_version("Gst", "1.0")
+gi.require_version("GstVideo", "1.0")
 from gi.repository import Gst
 
 Gst.init(None)
 
-from .shmsink import SHMSink
-from .sink import Sink
-from .udpsink import UDPSink
-from .unixfdsink import UnixFDSink
-from .utils import create_caps_string, delete_socket, get_format_info
+# Functional primitives
+from . import buffer, control, pipeline
+from . import element
+# from .utils import create_caps_string, delete_socket, get_format_info
+
+# Protocol-compliant wrappers
+from .readers import FileReader, RTMPReader, SHMReader, TestPatternReader, UDPReader, VideoReader
+from .writers import FileWriter, RTMPWriter, SHMWriter, UDPWriter, VideoWriter
 
 __all__ = [
-    "Sink",
-    "SHMSink",
-    "UDPSink",
-    "UnixFDSink",
-    "delete_socket",
-    "get_format_info",
-    "create_caps_string",
+    # Functional primitives
+    "buffer",
+    "control", 
+    "element",
+    "pipeline",
+    # Protocol-compliant wrappers
+    "VideoReader",
+    "VideoWriter",
+    "SHMReader",
+    "SHMWriter",
+    "RTMPReader", 
+    "RTMPWriter",
+    "UDPReader",
+    "UDPWriter",
+    "FileReader",
+    "FileWriter",
+    "TestPatternReader",
 ]
