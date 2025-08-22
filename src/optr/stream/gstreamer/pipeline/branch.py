@@ -1,28 +1,8 @@
+"""Pipeline branching utilities for tee elements."""
+
 from typing import Sequence
 from gi.repository import Gst
 
-def pipeline(*elements: Gst.Element, name: str | None = None) -> Gst.Pipeline:
-    """Create pipeline and add elements."""
-    pipe = Gst.Pipeline.new(name)
-    for e in elements:
-        pipe.add(e)
-        if e.get_parent() is not pipe:
-            raise RuntimeError(f"Failed to add {e.get_name() or e} to pipeline {name or '<unnamed>'}")
-    return pipe
-
-def link(*elements: Gst.Element) -> bool:
-    """Link elements in sequence."""
-    for a, b in zip(elements, elements[1:]):
-        if not a.link(b):
-            return False
-    return True
-
-def chain(*elements: Gst.Element, name: str | None = None) -> Gst.Pipeline:
-    """Create pipeline, add elements, and link them."""
-    pipe = pipeline(*elements, name=name)
-    if not link(*elements):
-        raise RuntimeError(f"Failed to link elements in pipeline {name or '<unnamed>'}")
-    return pipe
 
 def branch(tee: Gst.Element, *branches: Sequence[Gst.Element]) -> list[Gst.Element]:
     """
@@ -38,7 +18,7 @@ def branch(tee: Gst.Element, *branches: Sequence[Gst.Element]) -> list[Gst.Eleme
     if tee.get_pad_template("src_%u") is None:
         raise ValueError("Provided element does not have 'src_%u' request pad template (not a tee?)")
 
-    from .element import queue  # your queue() factory
+    from ..element.processing import queue  # your queue() factory
 
     created_queues: list[Gst.Element] = []
     for branch_elems in branches:
@@ -64,6 +44,9 @@ def branch(tee: Gst.Element, *branches: Sequence[Gst.Element]) -> list[Gst.Eleme
         for e in branch_elems:
             if e.get_parent() is not parent:
                 parent.add(e)
+        
+        # Link queue to branch elements
+        from .core import link
         if branch_elems and not link(q, *branch_elems):
             raise RuntimeError("Failed to link downstream branch after queue")
 
@@ -75,6 +58,7 @@ def branch(tee: Gst.Element, *branches: Sequence[Gst.Element]) -> list[Gst.Eleme
         created_queues.append(q)
 
     return created_queues
+
 
 def unbranch(tee: Gst.Element, *queues: Gst.Element) -> None:
     """
@@ -93,27 +77,69 @@ def unbranch(tee: Gst.Element, *queues: Gst.Element) -> None:
             except Exception:
                 pass  # already released / different tee
 
-def compose(*pipes: Gst.Pipeline, name: str | None = None) -> Gst.Pipeline:
-    """Merge multiple pipelines into one by moving their elements."""
-    main = Gst.Pipeline.new(name)
-    for p in pipes:
-        p.set_state(Gst.State.NULL)
 
-        it = p.iterate_elements()
-        elems: list[Gst.Element] = []
-        while True:
-            res, el = it.next()
-            if res == Gst.IteratorResult.OK:
-                elems.append(el)
-            elif res == Gst.IteratorResult.DONE:
-                break
-            elif res == Gst.IteratorResult.ERROR:
-                raise RuntimeError("Error iterating pipeline elements")
+def create_tee_branch(tee: Gst.Element, *elements: Gst.Element) -> Gst.Element:
+    """
+    Create a single branch from a tee element.
+    Returns the intermediate queue element for later reference.
+    """
+    queues = branch(tee, elements)
+    return queues[0] if queues else None
 
-        for el in elems:
-            p.remove(el)
-            main.add(el)
-            if el.get_parent() is not main:
-                raise RuntimeError(f"Failed to add {el.get_name() or el} to composed pipeline")
 
-    return main
+def remove_tee_branch(tee: Gst.Element, queue: Gst.Element) -> bool:
+    """
+    Remove a single branch from a tee element.
+    Returns True if successful, False otherwise.
+    """
+    try:
+        unbranch(tee, queue)
+        return True
+    except Exception:
+        return False
+
+
+def get_tee_branches(tee: Gst.Element) -> list[Gst.Element]:
+    """
+    Get all branch queue elements connected to a tee.
+    Returns list of queue elements that are direct children of the tee.
+    """
+    branches = []
+    
+    # Iterate through all src pads of the tee
+    src_pads = tee.iterate_src_pads()
+    while True:
+        result, pad = src_pads.next()
+        if result == Gst.IteratorResult.OK:
+            peer = pad.get_peer()
+            if peer:
+                peer_element = peer.get_parent_element()
+                # Check if it's a queue (typical intermediate element)
+                if peer_element and peer_element.get_factory():
+                    factory_name = peer_element.get_factory().get_name()
+                    if factory_name == "queue":
+                        branches.append(peer_element)
+        elif result == Gst.IteratorResult.DONE:
+            break
+        elif result == Gst.IteratorResult.ERROR:
+            break
+    
+    return branches
+
+
+def count_tee_branches(tee: Gst.Element) -> int:
+    """Count the number of active branches on a tee element."""
+    return len(get_tee_branches(tee))
+
+
+def is_tee_element(element: Gst.Element) -> bool:
+    """Check if an element is a tee-like element with request pads."""
+    if not element.get_factory():
+        return False
+    
+    factory_name = element.get_factory().get_name()
+    if factory_name == "tee":
+        return True
+    
+    # Check for request pad template
+    return element.get_pad_template("src_%u") is not None

@@ -1,5 +1,6 @@
 from collections.abc import Mapping
 from gi.repository import Gst
+from ..errors import ElementCreationError, PropertyError
 
 
 def create(
@@ -9,12 +10,16 @@ def create(
     element = Gst.ElementFactory.make(type, name)
 
     if not element:
-        raise RuntimeError(f"Failed to create {type} element")
+        raise ElementCreationError(type, name)
 
     if not props:
         return element
 
     for prop, value in props.items():
-        element.set_property(prop.replace("_", "-"), value)
+        prop_name = prop.replace("_", "-")
+        try:
+            element.set_property(prop_name, value)
+        except Exception as e:
+            raise PropertyError(type, prop_name, value, e) from e
 
     return element
