@@ -1,18 +1,15 @@
 from typing import Literal, TypedDict, Unpack
+
 from gi.repository import Gst
+
 from .base import create
 
 
-Queue = TypedDict(
-    "Queue",
-    {
-        "max_size_buffers": int,
-        "max_size_time": int,
-        "max_size_bytes": int,
-        "leaky": Literal["no", "upstream", "downstream"],
-    },
-    total=False,
-)
+class Queue(TypedDict, total=False):
+    max_size_buffers: int
+    max_size_time: int
+    max_size_bytes: int
+    leaky: Literal["no", "upstream", "downstream"]
 
 
 def queue(*, name: str | None = None, **props: Unpack[Queue]) -> Gst.Element:
@@ -20,7 +17,8 @@ def queue(*, name: str | None = None, **props: Unpack[Queue]) -> Gst.Element:
     return create("queue", props, name)
 
 
-CapsFilter = TypedDict("CapsFilter", {"caps": Gst.Caps}, total=False)
+class CapsFilter(TypedDict, total=False):
+    caps: Gst.Caps
 
 
 def capsfilter(*, name: str | None = None, **props: Unpack[CapsFilter]) -> Gst.Element:
@@ -28,7 +26,8 @@ def capsfilter(*, name: str | None = None, **props: Unpack[CapsFilter]) -> Gst.E
     return create("capsfilter", props, name)
 
 
-VideoConvert = TypedDict("VideoConvert", {}, total=False)
+class VideoConvert(TypedDict, total=False):
+    pass
 
 
 def videoconvert(
@@ -38,7 +37,8 @@ def videoconvert(
     return create("videoconvert", props, name=name)
 
 
-VideoScale = TypedDict("VideoScale", {}, total=False)
+class VideoScale(TypedDict, total=False):
+    pass
 
 
 def videoscale(*, name: str | None = None, **props: Unpack[VideoScale]) -> Gst.Element:
@@ -46,7 +46,8 @@ def videoscale(*, name: str | None = None, **props: Unpack[VideoScale]) -> Gst.E
     return create("videoscale", props, name=name)
 
 
-Tee = TypedDict("Tee", {}, total=False)
+class Tee(TypedDict, total=False):
+    pass
 
 
 def tee(*, name: str | None = None, **props: Unpack[Tee]) -> Gst.Element:
@@ -54,15 +55,10 @@ def tee(*, name: str | None = None, **props: Unpack[Tee]) -> Gst.Element:
     return create("tee", props, name=name)
 
 
-VideoRate = TypedDict(
-    "VideoRate",
-    {
-        "drop_only": bool,
-        "max_rate": int,
-        "new_pref": float,
-    },
-    total=False,
-)
+class VideoRate(TypedDict, total=False):
+    drop_only: bool
+    max_rate: int
+    new_pref: float
 
 
 def videorate(*, name: str | None = None, **props: Unpack[VideoRate]) -> Gst.Element:
@@ -70,32 +66,33 @@ def videorate(*, name: str | None = None, **props: Unpack[VideoRate]) -> Gst.Ele
     return create("videorate", props, name=name)
 
 
-AudioConvert = TypedDict("AudioConvert", {}, total=False)
+class AudioConvert(TypedDict, total=False):
+    pass
 
 
-def audioconvert(*, name: str | None = None, **props: Unpack[AudioConvert]) -> Gst.Element:
+def audioconvert(
+    *, name: str | None = None, **props: Unpack[AudioConvert]
+) -> Gst.Element:
     """Create audioconvert element."""
     return create("audioconvert", props, name=name)
 
 
-AudioResample = TypedDict("AudioResample", {}, total=False)
+class AudioResample(TypedDict, total=False):
+    pass
 
 
-def audioresample(*, name: str | None = None, **props: Unpack[AudioResample]) -> Gst.Element:
+def audioresample(
+    *, name: str | None = None, **props: Unpack[AudioResample]
+) -> Gst.Element:
     """Create audioresample element."""
     return create("audioresample", props, name=name)
 
 
-Identity = TypedDict(
-    "Identity",
-    {
-        "dump": bool,
-        "sync": bool,
-        "silent": bool,
-        "single_segment": bool,
-    },
-    total=False,
-)
+class Identity(TypedDict, total=False):
+    dump: bool
+    sync: bool
+    silent: bool
+    single_segment: bool
 
 
 def identity(*, name: str | None = None, **props: Unpack[Identity]) -> Gst.Element:
@@ -104,13 +101,8 @@ def identity(*, name: str | None = None, **props: Unpack[Identity]) -> Gst.Eleme
     return create("identity", props, name=name)
 
 
-Valve = TypedDict(
-    "Valve",
-    {
-        "drop": bool,
-    },
-    total=False,
-)
+class Valve(TypedDict, total=False):
+    drop: bool
 
 
 def valve(*, name: str | None = None, **props: Unpack[Valve]) -> Gst.Element:
@@ -119,13 +111,8 @@ def valve(*, name: str | None = None, **props: Unpack[Valve]) -> Gst.Element:
     return create("valve", props, name=name)
 
 
-VideoFlip = TypedDict(
-    "VideoFlip",
-    {
-        "method": int,  # 0=none, 1=clockwise, 2=rotate-180, 3=counterclockwise, 4=horizontal-flip, 5=vertical-flip, 6=upper-left-diagonal, 7=upper-right-diagonal
-    },
-    total=False,
-)
+class VideoFlip(TypedDict, total=False):
+    method: int
 
 
 def videoflip(*, name: str | None = None, **props: Unpack[VideoFlip]) -> Gst.Element:
@@ -133,16 +120,11 @@ def videoflip(*, name: str | None = None, **props: Unpack[VideoFlip]) -> Gst.Ele
     return create("videoflip", props, name=name)
 
 
-VideoCrop = TypedDict(
-    "VideoCrop",
-    {
-        "top": int,
-        "bottom": int,
-        "left": int,
-        "right": int,
-    },
-    total=False,
-)
+class VideoCrop(TypedDict, total=False):
+    top: int
+    bottom: int
+    left: int
+    right: int
 
 
 def videocrop(*, name: str | None = None, **props: Unpack[VideoCrop]) -> Gst.Element:
@@ -150,17 +132,12 @@ def videocrop(*, name: str | None = None, **props: Unpack[VideoCrop]) -> Gst.Ele
     return create("videocrop", props, name=name)
 
 
-VideoBox = TypedDict(
-    "VideoBox",
-    {
-        "top": int,
-        "bottom": int,
-        "left": int,
-        "right": int,
-        "fill": int,  # 0=black, 1=green, 2=blue, 3=red, 4=yellow, 5=magenta, 6=cyan, 7=white
-    },
-    total=False,
-)
+class VideoBox(TypedDict, total=False):
+    top: int
+    bottom: int
+    left: int
+    right: int
+    fill: int
 
 
 def videobox(*, name: str | None = None, **props: Unpack[VideoBox]) -> Gst.Element:
@@ -168,30 +145,22 @@ def videobox(*, name: str | None = None, **props: Unpack[VideoBox]) -> Gst.Eleme
     return create("videobox", props, name=name)
 
 
-AudioPanorama = TypedDict(
-    "AudioPanorama",
-    {
-        "panorama": float,  # -1.0 (left) to 1.0 (right)
-        "method": int,  # 0=psychoacoustic, 1=simple
-    },
-    total=False,
-)
+class AudioPanorama(TypedDict, total=False):
+    panorama: float
+    method: int
 
 
-def audiopanorama(*, name: str | None = None, **props: Unpack[AudioPanorama]) -> Gst.Element:
+def audiopanorama(
+    *, name: str | None = None, **props: Unpack[AudioPanorama]
+) -> Gst.Element:
     """Create audiopanorama element for stereo positioning."""
     props.setdefault("panorama", 0.0)
     return create("audiopanorama", props, name=name)
 
 
-Volume = TypedDict(
-    "Volume",
-    {
-        "volume": float,
-        "mute": bool,
-    },
-    total=False,
-)
+class Volume(TypedDict, total=False):
+    volume: float
+    mute: bool
 
 
 def volume(*, name: str | None = None, **props: Unpack[Volume]) -> Gst.Element:
@@ -201,14 +170,9 @@ def volume(*, name: str | None = None, **props: Unpack[Volume]) -> Gst.Element:
     return create("volume", props, name=name)
 
 
-Level = TypedDict(
-    "Level",
-    {
-        "message": bool,
-        "interval": int,  # nanoseconds
-    },
-    total=False,
-)
+class Level(TypedDict, total=False):
+    message: bool
+    interval: int
 
 
 def level(*, name: str | None = None, **props: Unpack[Level]) -> Gst.Element:
@@ -218,13 +182,8 @@ def level(*, name: str | None = None, **props: Unpack[Level]) -> Gst.Element:
     return create("level", props, name=name)
 
 
-Compositor = TypedDict(
-    "Compositor",
-    {
-        "background": int,  # 0=checker, 1=black, 2=white, 3=transparent
-    },
-    total=False,
-)
+class Compositor(TypedDict, total=False):
+    background: int
 
 
 def compositor(*, name: str | None = None, **props: Unpack[Compositor]) -> Gst.Element:
@@ -233,7 +192,8 @@ def compositor(*, name: str | None = None, **props: Unpack[Compositor]) -> Gst.E
     return create("compositor", props, name=name)
 
 
-AudioMixer = TypedDict("AudioMixer", {}, total=False)
+class AudioMixer(TypedDict, total=False):
+    pass
 
 
 def audiomixer(*, name: str | None = None, **props: Unpack[AudioMixer]) -> Gst.Element:

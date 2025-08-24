@@ -1,6 +1,5 @@
 """Synchronous pipeline operations."""
 
-from typing import Optional
 from gi.repository import Gst
 
 
@@ -35,7 +34,9 @@ def wait_for_eos(pipeline: Gst.Pipeline, timeout_seconds: float | None = None) -
     return False
 
 
-def measure_latency(pipeline: Gst.Pipeline, timeout_seconds: float = 5.0) -> Optional[float]:
+def measure_latency(
+    pipeline: Gst.Pipeline, timeout_seconds: float = 5.0
+) -> float | None:
     """Measure pipeline latency using latency query."""
     query = Gst.Query.new_latency()
     if pipeline.query(query):

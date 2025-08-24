@@ -1,6 +1,5 @@
 """Core pipeline creation and composition utilities."""
 
-from typing import Sequence
 from gi.repository import Gst
 
 
@@ -18,7 +17,7 @@ def pipeline(*elements: Gst.Element, name: str | None = None) -> Gst.Pipeline:
 
 def link(*elements: Gst.Element) -> bool:
     """Link elements in sequence."""
-    for a, b in zip(elements, elements[1:]):
+    for a, b in zip(elements, elements[1:], strict=False):
         if not a.link(b):
             return False
     return True

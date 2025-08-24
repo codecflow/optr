@@ -17,7 +17,7 @@ from .sync import measure_latency, seek, wait_for_eos
 __all__ = [
     # State management
     "play",
-    "pause", 
+    "pause",
     "stop",
     "get_state",
     "wait_for_state",

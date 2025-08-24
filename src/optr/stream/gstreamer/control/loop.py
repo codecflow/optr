@@ -1,7 +1,8 @@
 """Main loop utilities for pipeline control."""
 
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Generator
+
 from gi.repository import GLib
 
 

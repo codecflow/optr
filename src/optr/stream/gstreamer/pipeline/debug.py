@@ -1,16 +1,22 @@
-import time
-from typing import Any, Dict, TypedDict
+from typing import TypedDict
+
 from gi.repository import Gst
 
 
-Element = TypedDict("Element", {"name": str, "factory": str, "state": str})
+class Element(TypedDict):
+    name: str
+    factory: str
+    state: str
+
+
 Connection = TypedDict(
     "Connection", {"from": str, "from_pad": str, "to": str, "to_pad": str}
 )
 
-Topology = TypedDict(
-    "Topology", {"elements": list[Element], "connections": list[Connection]}
-)
+
+class Topology(TypedDict):
+    elements: list[Element]
+    connections: list[Connection]
 
 
 def topology(pipeline: Gst.Pipeline) -> Topology:

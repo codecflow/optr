@@ -6,7 +6,7 @@ from typing import Final, Self
 
 ConvertibleToFPS = int | float | tuple[int, int] | Fraction
 NTSC: Final = ((24000, 1001), (30000, 1001), (60000, 1001), (120000, 1001))
-NTSC_FLOATS: Final = zip(NTSC, tuple(n / d for n, d in NTSC))
+NTSC_FLOATS: Final = zip(NTSC, tuple(n / d for n, d in NTSC), strict=False)
 
 
 @lru_cache(maxsize=64)
@@ -78,6 +78,6 @@ class FPS:
 
     def __str__(self) -> str:
         return f"{self.num}/{self.den}"
-    
+
     def __iter__(self):
         return iter([self.num, self.den])

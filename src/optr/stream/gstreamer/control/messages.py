@@ -1,6 +1,7 @@
 """Pipeline message handling utilities."""
 
-from typing import Callable
+from collections.abc import Callable
+
 from gi.repository import Gst
 
 

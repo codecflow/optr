@@ -1,18 +1,15 @@
 from typing import TypedDict, Unpack
+
 from gi.repository import Gst
+
 from .base import create
 
 
-VideoTestSource = TypedDict(
-    "VideoTestSource",
-    {
-        "pattern": str,
-        "width": int,
-        "height": int,
-        "framerate": str,
-    },
-    total=False,
-)
+class VideoTestSource(TypedDict, total=False):
+    pattern: str
+    width: int
+    height: int
+    framerate: str
 
 
 def videotestsrc(

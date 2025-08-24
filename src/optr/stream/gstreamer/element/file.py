@@ -1,17 +1,14 @@
 from typing import Required, TypedDict, Unpack
+
 from gi.repository import Gst
+
 from .base import create
 
 
-FileSource = TypedDict(
-    "FileSource",
-    {
-        "location": Required[str],
-        "is_live": bool,
-        "do_timestamp": bool,
-    },
-    total=False,
-)
+class FileSource(TypedDict, total=False):
+    location: Required[str]
+    is_live: bool
+    do_timestamp: bool
 
 
 def filesrc(*, name: str | None = None, **props: Unpack[FileSource]) -> Gst.Element:
@@ -21,7 +18,8 @@ def filesrc(*, name: str | None = None, **props: Unpack[FileSource]) -> Gst.Elem
     return create("filesrc", props, name)
 
 
-FileSink = TypedDict("FileSink", {"location": Required[str]}, total=False)
+class FileSink(TypedDict, total=False):
+    location: Required[str]
 
 
 def filesink(*, name: str | None = None, **props: Unpack[FileSink]) -> Gst.Element:

@@ -1,18 +1,15 @@
 from typing import TypedDict, Unpack
+
 from gi.repository import Gst
+
 from .base import create
 
 
-X264Enc = TypedDict(
-    "X264Enc",
-    {
-        "bitrate": int,
-        "tune": str,
-        "speed_preset": str,
-        "key_int_max": int,
-    },
-    total=False,
-)
+class X264Enc(TypedDict, total=False):
+    bitrate: int
+    tune: str
+    speed_preset: str
+    key_int_max: int
 
 
 def x264enc(*, name: str | None = None, **props: Unpack[X264Enc]) -> Gst.Element:
@@ -22,9 +19,9 @@ def x264enc(*, name: str | None = None, **props: Unpack[X264Enc]) -> Gst.Element
     return create("x264enc", props, name)
 
 
-DecodeBin = TypedDict(
-    "DecodeBin", {"connect_to_sink": bool, "use_dts": bool}, total=False
-)
+class DecodeBin(TypedDict, total=False):
+    connect_to_sink: bool
+    use_dts: bool
 
 
 def decodebin(*, name: str | None = None, **props: Unpack[DecodeBin]) -> Gst.Element:
@@ -35,7 +32,8 @@ def decodebin(*, name: str | None = None, **props: Unpack[DecodeBin]) -> Gst.Ele
     return create("decodebin", props, name)
 
 
-AVDecH264 = TypedDict("AVDecH264", {}, total=False)
+class AVDecH264(TypedDict, total=False):
+    pass
 
 
 def avdec_h264(*, name: str | None = None, **props: Unpack[AVDecH264]) -> Gst.Element:
@@ -43,16 +41,11 @@ def avdec_h264(*, name: str | None = None, **props: Unpack[AVDecH264]) -> Gst.El
     return create("avdec_h264", props, name=name)
 
 
-X265Enc = TypedDict(
-    "X265Enc",
-    {
-        "bitrate": int,
-        "speed_preset": str,
-        "tune": str,
-        "key_int_max": int,
-    },
-    total=False,
-)
+class X265Enc(TypedDict, total=False):
+    bitrate: int
+    speed_preset: str
+    tune: str
+    key_int_max: int
 
 
 def x265enc(*, name: str | None = None, **props: Unpack[X265Enc]) -> Gst.Element:
@@ -62,16 +55,11 @@ def x265enc(*, name: str | None = None, **props: Unpack[X265Enc]) -> Gst.Element
     return create("x265enc", props, name=name)
 
 
-VP8Enc = TypedDict(
-    "VP8Enc",
-    {
-        "target_bitrate": int,
-        "deadline": int,
-        "cpu_used": int,
-        "keyframe_max_dist": int,
-    },
-    total=False,
-)
+class VP8Enc(TypedDict, total=False):
+    target_bitrate: int
+    deadline: int
+    cpu_used: int
+    keyframe_max_dist: int
 
 
 def vp8enc(*, name: str | None = None, **props: Unpack[VP8Enc]) -> Gst.Element:
@@ -81,16 +69,11 @@ def vp8enc(*, name: str | None = None, **props: Unpack[VP8Enc]) -> Gst.Element:
     return create("vp8enc", props, name=name)
 
 
-VP9Enc = TypedDict(
-    "VP9Enc",
-    {
-        "target_bitrate": int,
-        "deadline": int,
-        "cpu_used": int,
-        "keyframe_max_dist": int,
-    },
-    total=False,
-)
+class VP9Enc(TypedDict, total=False):
+    target_bitrate: int
+    deadline: int
+    cpu_used: int
+    keyframe_max_dist: int
 
 
 def vp9enc(*, name: str | None = None, **props: Unpack[VP9Enc]) -> Gst.Element:
@@ -101,7 +84,8 @@ def vp9enc(*, name: str | None = None, **props: Unpack[VP9Enc]) -> Gst.Element:
 
 
 # Additional decoders
-AVDecH265 = TypedDict("AVDecH265", {}, total=False)
+class AVDecH265(TypedDict, total=False):
+    pass
 
 
 def avdec_h265(*, name: str | None = None, **props: Unpack[AVDecH265]) -> Gst.Element:
@@ -109,7 +93,8 @@ def avdec_h265(*, name: str | None = None, **props: Unpack[AVDecH265]) -> Gst.El
     return create("avdec_h265", props, name=name)
 
 
-AVDecVP8 = TypedDict("AVDecVP8", {}, total=False)
+class AVDecVP8(TypedDict, total=False):
+    pass
 
 
 def avdec_vp8(*, name: str | None = None, **props: Unpack[AVDecVP8]) -> Gst.Element:
@@ -117,7 +102,8 @@ def avdec_vp8(*, name: str | None = None, **props: Unpack[AVDecVP8]) -> Gst.Elem
     return create("avdec_vp8", props, name=name)
 
 
-AVDecVP9 = TypedDict("AVDecVP9", {}, total=False)
+class AVDecVP9(TypedDict, total=False):
+    pass
 
 
 def avdec_vp9(*, name: str | None = None, **props: Unpack[AVDecVP9]) -> Gst.Element:
@@ -126,14 +112,9 @@ def avdec_vp9(*, name: str | None = None, **props: Unpack[AVDecVP9]) -> Gst.Elem
 
 
 # Audio encoders
-AACEnc = TypedDict(
-    "AACEnc",
-    {
-        "bitrate": int,
-        "compliance": str,
-    },
-    total=False,
-)
+class AACEnc(TypedDict, total=False):
+    bitrate: int
+    compliance: str
 
 
 def aacenc(*, name: str | None = None, **props: Unpack[AACEnc]) -> Gst.Element:
@@ -142,15 +123,10 @@ def aacenc(*, name: str | None = None, **props: Unpack[AACEnc]) -> Gst.Element:
     return create("aacenc", props, name=name)
 
 
-OpusEnc = TypedDict(
-    "OpusEnc",
-    {
-        "bitrate": int,
-        "complexity": int,
-        "frame_size": int,
-    },
-    total=False,
-)
+class OpusEnc(TypedDict, total=False):
+    bitrate: int
+    complexity: int
+    frame_size: int
 
 
 def opusenc(*, name: str | None = None, **props: Unpack[OpusEnc]) -> Gst.Element:
@@ -159,14 +135,9 @@ def opusenc(*, name: str | None = None, **props: Unpack[OpusEnc]) -> Gst.Element
     return create("opusenc", props, name=name)
 
 
-VorbisEnc = TypedDict(
-    "VorbisEnc",
-    {
-        "bitrate": int,
-        "quality": float,
-    },
-    total=False,
-)
+class VorbisEnc(TypedDict, total=False):
+    bitrate: int
+    quality: float
 
 
 def vorbisenc(*, name: str | None = None, **props: Unpack[VorbisEnc]) -> Gst.Element:
@@ -176,7 +147,8 @@ def vorbisenc(*, name: str | None = None, **props: Unpack[VorbisEnc]) -> Gst.Ele
 
 
 # Audio decoders
-AACDec = TypedDict("AACDec", {}, total=False)
+class AACDec(TypedDict, total=False):
+    pass
 
 
 def aacdec(*, name: str | None = None, **props: Unpack[AACDec]) -> Gst.Element:
@@ -184,7 +156,8 @@ def aacdec(*, name: str | None = None, **props: Unpack[AACDec]) -> Gst.Element:
     return create("aacdec", props, name=name)
 
 
-OpusDec = TypedDict("OpusDec", {}, total=False)
+class OpusDec(TypedDict, total=False):
+    pass
 
 
 def opusdec(*, name: str | None = None, **props: Unpack[OpusDec]) -> Gst.Element:
@@ -192,7 +165,8 @@ def opusdec(*, name: str | None = None, **props: Unpack[OpusDec]) -> Gst.Element
     return create("opusdec", props, name=name)
 
 
-VorbisDec = TypedDict("VorbisDec", {}, total=False)
+class VorbisDec(TypedDict, total=False):
+    pass
 
 
 def vorbisdec(*, name: str | None = None, **props: Unpack[VorbisDec]) -> Gst.Element:

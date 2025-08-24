@@ -12,7 +12,7 @@ from .core import (
 
 __all__ = [
     "write",
-    "read", 
+    "read",
     "push",
     "pull",
     "set_timestamp",

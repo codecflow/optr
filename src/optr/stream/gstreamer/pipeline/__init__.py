@@ -1,39 +1,38 @@
 """Pipeline utilities and dynamic modification tools."""
 
 # Core pipeline functions
-from .core import pipeline, link, chain, compose
-
 # Branching utilities
 from .branch import (
     branch,
-    unbranch,
-    create_tee_branch,
-    remove_tee_branch,
-    get_tee_branches,
     count_tee_branches,
+    create_tee_branch,
+    get_tee_branches,
     is_tee_element,
+    remove_tee_branch,
+    unbranch,
 )
+from .core import chain, compose, link, pipeline
+from .debug import dotgraph, topology
 
 # Dynamic pipeline modification
 from .dynamic import (
-    hot_add,
-    hot_remove,
-    reconnect,
-    replace_element,
-    insert_element,
     branch_insert,
     branch_remove,
+    hot_add,
+    hot_remove,
+    insert_element,
+    reconnect,
+    replace_element,
 )
 
 # Debugging and monitoring utilities
 from .monitor import Monitor, profiler
 from .validate import validate
-from .debug import topology, dotgraph
 
 __all__ = [
     # Core pipeline functions
     "pipeline",
-    "link", 
+    "link",
     "chain",
     "compose",
     # Branching utilities

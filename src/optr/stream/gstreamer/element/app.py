@@ -1,21 +1,18 @@
 from typing import Literal, Required, TypedDict, Unpack
+
 from gi.repository import Gst
+
 from .base import create
 
 
-AppSrc = TypedDict(
-    "AppSrc",
-    {
-        "caps": Required[Gst.Caps],
-        "format": Literal["time", "bytes", "buffers"] | Gst.Format,
-        "max_buffers": int,
-        "block": bool,
-        "emit_signals": bool,
-        "is_live": bool,
-        "do_timestamp": bool,
-    },
-    total=False,
-)
+class AppSrc(TypedDict, total=False):
+    caps: Required[Gst.Caps]
+    format: Literal["time", "bytes", "buffers"] | Gst.Format
+    max_buffers: int
+    block: bool
+    emit_signals: bool
+    is_live: bool
+    do_timestamp: bool
 
 
 def appsrc(*, name: str | None = None, **props: Unpack[AppSrc]) -> Gst.Element:
@@ -28,17 +25,12 @@ def appsrc(*, name: str | None = None, **props: Unpack[AppSrc]) -> Gst.Element:
     return create("appsrc", props, name)
 
 
-AppSink = TypedDict(
-    "AppSink",
-    {
-        "caps": Gst.Caps,
-        "max_buffers": int,
-        "emit_signals": bool,
-        "drop": bool,
-        "sync": bool,
-    },
-    total=False,
-)
+class AppSink(TypedDict, total=False):
+    caps: Gst.Caps
+    max_buffers: int
+    emit_signals: bool
+    drop: bool
+    sync: bool
 
 
 def appsink(*, name: str | None = None, **props: Unpack[AppSink]) -> Gst.Element:

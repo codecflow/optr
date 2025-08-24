@@ -1,9 +1,12 @@
 from typing import TypedDict, Unpack
+
 from gi.repository import Gst
+
 from .base import create
 
 
-FLVMux = TypedDict("FLVMux", {"streamable": bool}, total=False)
+class FLVMux(TypedDict, total=False):
+    streamable: bool
 
 
 def flvmux(*, name: str | None = None, **props: Unpack[FLVMux]) -> Gst.Element:
@@ -12,7 +15,8 @@ def flvmux(*, name: str | None = None, **props: Unpack[FLVMux]) -> Gst.Element:
     return create("flvmux", props, name=name)
 
 
-MP4Mux = TypedDict("MP4Mux", {}, total=False)
+class MP4Mux(TypedDict, total=False):
+    pass
 
 
 def mp4mux(*, name: str | None = None, **props: Unpack[MP4Mux]) -> Gst.Element:
@@ -20,7 +24,8 @@ def mp4mux(*, name: str | None = None, **props: Unpack[MP4Mux]) -> Gst.Element:
     return create("mp4mux", props, name=name)
 
 
-RTPH264Pay = TypedDict("RTPH264Pay", {}, total=False)
+class RTPH264Pay(TypedDict, total=False):
+    pass
 
 
 def payloader(*, name: str | None = None, **props: Unpack[RTPH264Pay]) -> Gst.Element:
@@ -28,7 +33,8 @@ def payloader(*, name: str | None = None, **props: Unpack[RTPH264Pay]) -> Gst.El
     return create("rtph264pay", props, name)
 
 
-RTPH264Depay = TypedDict("RTPH264Depay", {}, total=False)
+class RTPH264Depay(TypedDict, total=False):
+    pass
 
 
 def rtph264depay(
@@ -38,16 +44,11 @@ def rtph264depay(
     return create("rtph264depay", props, name=name)
 
 
-QtMux = TypedDict(
-    "QtMux",
-    {
-        "movie_timescale": int,
-        "trak_timescale": int,
-        "fast_start": bool,
-        "streamable": bool,
-    },
-    total=False,
-)
+class QtMux(TypedDict, total=False):
+    movie_timescale: int
+    trak_timescale: int
+    fast_start: bool
+    streamable: bool
 
 
 def qtmux(*, name: str | None = None, **props: Unpack[QtMux]) -> Gst.Element:
@@ -57,32 +58,24 @@ def qtmux(*, name: str | None = None, **props: Unpack[QtMux]) -> Gst.Element:
     return create("qtmux", props, name=name)
 
 
-MatroskaMux = TypedDict(
-    "MatroskaMux",
-    {
-        "writing_app": str,
-        "streamable": bool,
-        "min_index_interval": int,
-    },
-    total=False,
-)
+class MatroskaMux(TypedDict, total=False):
+    writing_app: str
+    streamable: bool
+    min_index_interval: int
 
 
-def matroskamux(*, name: str | None = None, **props: Unpack[MatroskaMux]) -> Gst.Element:
+def matroskamux(
+    *, name: str | None = None, **props: Unpack[MatroskaMux]
+) -> Gst.Element:
     """Create matroskamux element with typed properties."""
     props.setdefault("streamable", False)
     return create("matroskamux", props, name=name)
 
 
-MPEGTSMux = TypedDict(
-    "MPEGTSMux",
-    {
-        "prog_map": str,
-        "pat_interval": int,
-        "pmt_interval": int,
-    },
-    total=False,
-)
+class MPEGTSMux(TypedDict, total=False):
+    prog_map: str
+    pat_interval: int
+    pmt_interval: int
 
 
 def mpegtsmux(*, name: str | None = None, **props: Unpack[MPEGTSMux]) -> Gst.Element:
@@ -92,7 +85,8 @@ def mpegtsmux(*, name: str | None = None, **props: Unpack[MPEGTSMux]) -> Gst.Ele
     return create("mpegtsmux", props, name=name)
 
 
-AVIMux = TypedDict("AVIMux", {}, total=False)
+class AVIMux(TypedDict, total=False):
+    pass
 
 
 def avimux(*, name: str | None = None, **props: Unpack[AVIMux]) -> Gst.Element:
@@ -100,14 +94,9 @@ def avimux(*, name: str | None = None, **props: Unpack[AVIMux]) -> Gst.Element:
     return create("avimux", props, name=name)
 
 
-WebMMux = TypedDict(
-    "WebMMux",
-    {
-        "writing_app": str,
-        "streamable": bool,
-    },
-    total=False,
-)
+class WebMMux(TypedDict, total=False):
+    writing_app: str
+    streamable: bool
 
 
 def webmmux(*, name: str | None = None, **props: Unpack[WebMMux]) -> Gst.Element:
@@ -116,7 +105,8 @@ def webmmux(*, name: str | None = None, **props: Unpack[WebMMux]) -> Gst.Element
     return create("webmmux", props, name=name)
 
 
-OggMux = TypedDict("OggMux", {}, total=False)
+class OggMux(TypedDict, total=False):
+    pass
 
 
 def oggmux(*, name: str | None = None, **props: Unpack[OggMux]) -> Gst.Element:
@@ -125,7 +115,8 @@ def oggmux(*, name: str | None = None, **props: Unpack[OggMux]) -> Gst.Element:
 
 
 # Additional RTP payloaders
-RTPH265Pay = TypedDict("RTPH265Pay", {}, total=False)
+class RTPH265Pay(TypedDict, total=False):
+    pass
 
 
 def rtph265pay(*, name: str | None = None, **props: Unpack[RTPH265Pay]) -> Gst.Element:
@@ -133,7 +124,8 @@ def rtph265pay(*, name: str | None = None, **props: Unpack[RTPH265Pay]) -> Gst.E
     return create("rtph265pay", props, name=name)
 
 
-RTPVP8Pay = TypedDict("RTPVP8Pay", {}, total=False)
+class RTPVP8Pay(TypedDict, total=False):
+    pass
 
 
 def rtpvp8pay(*, name: str | None = None, **props: Unpack[RTPVP8Pay]) -> Gst.Element:
@@ -141,7 +133,8 @@ def rtpvp8pay(*, name: str | None = None, **props: Unpack[RTPVP8Pay]) -> Gst.Ele
     return create("rtpvp8pay", props, name=name)
 
 
-RTPVP9Pay = TypedDict("RTPVP9Pay", {}, total=False)
+class RTPVP9Pay(TypedDict, total=False):
+    pass
 
 
 def rtpvp9pay(*, name: str | None = None, **props: Unpack[RTPVP9Pay]) -> Gst.Element:
@@ -150,25 +143,34 @@ def rtpvp9pay(*, name: str | None = None, **props: Unpack[RTPVP9Pay]) -> Gst.Ele
 
 
 # Additional RTP depayloaders
-RTPH265Depay = TypedDict("RTPH265Depay", {}, total=False)
+class RTPH265Depay(TypedDict, total=False):
+    pass
 
 
-def rtph265depay(*, name: str | None = None, **props: Unpack[RTPH265Depay]) -> Gst.Element:
+def rtph265depay(
+    *, name: str | None = None, **props: Unpack[RTPH265Depay]
+) -> Gst.Element:
     """Create rtph265depay element with typed properties."""
     return create("rtph265depay", props, name=name)
 
 
-RTPVP8Depay = TypedDict("RTPVP8Depay", {}, total=False)
+class RTPVP8Depay(TypedDict, total=False):
+    pass
 
 
-def rtpvp8depay(*, name: str | None = None, **props: Unpack[RTPVP8Depay]) -> Gst.Element:
+def rtpvp8depay(
+    *, name: str | None = None, **props: Unpack[RTPVP8Depay]
+) -> Gst.Element:
     """Create rtpvp8depay element with typed properties."""
     return create("rtpvp8depay", props, name=name)
 
 
-RTPVP9Depay = TypedDict("RTPVP9Depay", {}, total=False)
+class RTPVP9Depay(TypedDict, total=False):
+    pass
 
 
-def rtpvp9depay(*, name: str | None = None, **props: Unpack[RTPVP9Depay]) -> Gst.Element:
+def rtpvp9depay(
+    *, name: str | None = None, **props: Unpack[RTPVP9Depay]
+) -> Gst.Element:
     """Create rtpvp9depay element with typed properties."""
     return create("rtpvp9depay", props, name=name)

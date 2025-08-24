@@ -1,5 +1,7 @@
 from collections.abc import Mapping
+
 from gi.repository import Gst
+
 from ..errors import ElementCreationError, PropertyError
 
 

@@ -1,7 +1,8 @@
 from typing import Required, TypedDict, Unpack
-from gi.repository import Gst
-from .base import create
 
+from gi.repository import Gst
+
+from .base import create
 
 SHMSink = TypedDict(
     "SHMSink",
@@ -26,15 +27,10 @@ def shmsink(*, name: str | None = None, **props: Unpack[SHMSink]) -> Gst.Element
     return create("shmsink", props, name)
 
 
-SHMSource = TypedDict(
-    "SHMSource",
-    {
-        "socket_path": Required[str],
-        "is_live": bool,
-        "do_timestamp": bool,
-    },
-    total=False,
-)
+class SHMSource(TypedDict, total=False):
+    socket_path: Required[str]
+    is_live: bool
+    do_timestamp: bool
 
 
 def shmsrc(*, name: str | None = None, **props: Unpack[SHMSource]) -> Gst.Element:
@@ -63,16 +59,11 @@ def udpsink(*, name: str | None = None, **props: Unpack[UDPSink]) -> Gst.Element
     return create("udpsink", props, name)
 
 
-UDPSource = TypedDict(
-    "UDPSource",
-    {
-        "host": Required[str],
-        "port": Required[int],
-        "is_live": bool,
-        "do_timestamp": bool,
-    },
-    total=False,
-)
+class UDPSource(TypedDict, total=False):
+    host: Required[str]
+    port: Required[int]
+    is_live: bool
+    do_timestamp: bool
 
 
 def udpsrc(*, name: str | None = None, **props: Unpack[UDPSource]) -> Gst.Element:
@@ -82,7 +73,9 @@ def udpsrc(*, name: str | None = None, **props: Unpack[UDPSource]) -> Gst.Elemen
     return create("udpsrc", props, name)
 
 
-RTMPSink = TypedDict("RTMPSink", {"location": Required[str], "sync": bool}, total=False)
+class RTMPSink(TypedDict, total=False):
+    location: Required[str]
+    sync: bool
 
 
 def rtmpsink(*, name: str | None = None, **props: Unpack[RTMPSink]) -> Gst.Element:
@@ -90,15 +83,10 @@ def rtmpsink(*, name: str | None = None, **props: Unpack[RTMPSink]) -> Gst.Eleme
     return create("rtmpsink", props, name)
 
 
-RTPSource = TypedDict(
-    "RTPSource",
-    {
-        "location": Required[str],
-        "is_live": bool,
-        "do_timestamp": bool,
-    },
-    total=False,
-)
+class RTPSource(TypedDict, total=False):
+    location: Required[str]
+    is_live: bool
+    do_timestamp: bool
 
 
 def rtmpsrc(*, name: str | None = None, **props: Unpack[RTPSource]) -> Gst.Element:

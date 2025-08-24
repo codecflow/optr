@@ -1,11 +1,12 @@
 """Element debugging utilities."""
 
 from collections.abc import Mapping
-from typing import Dict, Any, TypedDict
+from typing import Any, TypedDict
+
 from gi.repository import Gst
 
 
-def properties(element: Gst.Element) -> Dict[str, Any]:
+def properties(element: Gst.Element) -> dict[str, Any]:
     """Get all properties of an element for debugging."""
     props = {}
 
@@ -35,7 +36,7 @@ def properties(element: Gst.Element) -> Dict[str, Any]:
     return props
 
 
-def info(element: Gst.Element) -> Dict[str, Any]:
+def info(element: Gst.Element) -> dict[str, Any]:
     """Get general information about an element."""
     factory = element.get_factory()
     if not factory:
@@ -55,18 +56,17 @@ def info(element: Gst.Element) -> Dict[str, Any]:
     }
 
 
-Template = TypedDict(
-    "Template", {"name": str, "direction": str, "presence": str, "caps": str}
-)
+class Template(TypedDict):
+    name: str
+    direction: str
+    presence: str
+    caps: str
 
-Pad = TypedDict(
-    "Pad",
-    {
-        "static_pads": list[Template],
-        "request_pads": list[Template],
-        "sometimes_pads": list[Template],
-    },
-)
+
+class Pad(TypedDict):
+    static_pads: list[Template]
+    request_pads: list[Template]
+    sometimes_pads: list[Template]
 
 
 def pads(element: Gst.Element) -> Mapping[str, Any]:
@@ -97,7 +97,7 @@ def pads(element: Gst.Element) -> Mapping[str, Any]:
     return pad_info
 
 
-def state(element: Gst.Element) -> Dict[str, Any]:
+def state(element: Gst.Element) -> dict[str, Any]:
     """Get element state information."""
     ret, current, pending = element.get_state(0)
 

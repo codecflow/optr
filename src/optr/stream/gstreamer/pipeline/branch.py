@@ -1,6 +1,7 @@
 """Pipeline branching utilities for tee elements."""
 
-from typing import Sequence
+from collections.abc import Sequence
+
 from gi.repository import Gst
 
 
@@ -16,7 +17,9 @@ def branch(tee: Gst.Element, *branches: Sequence[Gst.Element]) -> list[Gst.Eleme
         raise RuntimeError("tee must be added to a bin/pipeline before branching")
     # validate it actually is a tee-like elem with request pads
     if tee.get_pad_template("src_%u") is None:
-        raise ValueError("Provided element does not have 'src_%u' request pad template (not a tee?)")
+        raise ValueError(
+            "Provided element does not have 'src_%u' request pad template (not a tee?)"
+        )
 
     from ..element.processing import queue  # your queue() factory
 
@@ -44,9 +47,10 @@ def branch(tee: Gst.Element, *branches: Sequence[Gst.Element]) -> list[Gst.Eleme
         for e in branch_elems:
             if e.get_parent() is not parent:
                 parent.add(e)
-        
+
         # Link queue to branch elements
         from .core import link
+
         if branch_elems and not link(q, *branch_elems):
             raise RuntimeError("Failed to link downstream branch after queue")
 
@@ -105,7 +109,7 @@ def get_tee_branches(tee: Gst.Element) -> list[Gst.Element]:
     Returns list of queue elements that are direct children of the tee.
     """
     branches = []
-    
+
     # Iterate through all src pads of the tee
     src_pads = tee.iterate_src_pads()
     while True:
@@ -123,7 +127,7 @@ def get_tee_branches(tee: Gst.Element) -> list[Gst.Element]:
             break
         elif result == Gst.IteratorResult.ERROR:
             break
-    
+
     return branches
 
 
@@ -136,10 +140,10 @@ def is_tee_element(element: Gst.Element) -> bool:
     """Check if an element is a tee-like element with request pads."""
     if not element.get_factory():
         return False
-    
+
     factory_name = element.get_factory().get_name()
     if factory_name == "tee":
         return True
-    
+
     # Check for request pad template
     return element.get_pad_template("src_%u") is not None

@@ -1,6 +1,5 @@
 """Pipeline state management functions."""
 
-from typing import Tuple
 from gi.repository import Gst
 
 
@@ -52,17 +51,25 @@ def is_paused(pipeline: Gst.Pipeline) -> bool:
     except RuntimeError:
         return False
 
-def wait_for_state_change(pipeline: Gst.Pipeline, target_state: Gst.State, 
-                         timeout_seconds: float = 5.0) -> Tuple[bool, str]:
+
+def wait_for_state_change(
+    pipeline: Gst.Pipeline, target_state: Gst.State, timeout_seconds: float = 5.0
+) -> tuple[bool, str]:
     """Wait for pipeline to reach target state with detailed error reporting."""
     timeout_ns = int(timeout_seconds * Gst.SECOND)
     ret, current, pending = pipeline.get_state(timeout_ns)
-    
+
     if ret == Gst.StateChangeReturn.SUCCESS and current == target_state:
         return True, f"Successfully reached {target_state.value_nick}"
     elif ret == Gst.StateChangeReturn.ASYNC:
-        return False, f"Timeout waiting for {target_state.value_nick} (current: {current.value_nick}, pending: {pending.value_nick})"
+        return (
+            False,
+            f"Timeout waiting for {target_state.value_nick} (current: {current.value_nick}, pending: {pending.value_nick})",
+        )
     elif ret == Gst.StateChangeReturn.FAILURE:
-        return False, f"Failed to change state to {target_state.value_nick} (current: {current.value_nick})"
+        return (
+            False,
+            f"Failed to change state to {target_state.value_nick} (current: {current.value_nick})",
+        )
     else:
         return False, f"Unknown state change result: {ret.value_nick}"

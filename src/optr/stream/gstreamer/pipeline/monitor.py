@@ -1,9 +1,10 @@
 """Pipeline debugging, monitoring, and utility functions."""
 
 import time
-from typing import Any, Dict
-from gi.repository import Gst, GLib
 from contextlib import contextmanager
+from typing import Any
+
+from gi.repository import Gst
 
 
 def state_name(pipeline: Gst.Pipeline) -> str:
@@ -18,7 +19,8 @@ def state_name(pipeline: Gst.Pipeline) -> str:
             return f"UNKNOWN ({ret.value_nick})"
     except Exception:
         return "ERROR"
-    
+
+
 class Monitor:
     """Monitor pipeline performance and state."""
 
@@ -51,7 +53,7 @@ class Monitor:
             self.last_fps_time = current_time
             self.frame_count = 0
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get current monitoring statistics."""
         current_time = time.time()
         runtime = current_time - self.start_time if self.start_time else 0

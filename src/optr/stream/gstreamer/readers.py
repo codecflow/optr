@@ -137,7 +137,9 @@ class TestPatternReader(VideoReader):
             caps=caps.raw(width=width, height=height, fps=FPS(fps), format=format)
         )
 
-        pipe = pipeline.chain(src, capsfilter, convert, sink, name="test-pattern-reader")
+        pipe = pipeline.chain(
+            src, capsfilter, convert, sink, name="test-pattern-reader"
+        )
         control.play_sync(pipe)
 
         super().__init__(pipe, sink)

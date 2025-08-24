@@ -72,7 +72,9 @@ class SHMWriter(VideoWriter):
         do_timestamp: bool = True,
     ):
         video_caps = caps.raw(width=width, height=height, fps=FPS(fps), format=format)
-        src = element.appsrc(caps=video_caps, is_live=is_live, do_timestamp=do_timestamp)
+        src = element.appsrc(
+            caps=video_caps, is_live=is_live, do_timestamp=do_timestamp
+        )
         sink = element.shmsink(socket_path=socket_path)
 
         pipe = pipeline.chain(src, sink, name="shm-writer")
@@ -95,7 +97,9 @@ class RTMPWriter(VideoWriter):
         do_timestamp: bool = True,
     ):
         video_caps = caps.raw(width=width, height=height, fps=FPS(fps), format=format)
-        src = element.appsrc(caps=video_caps, is_live=is_live, do_timestamp=do_timestamp)
+        src = element.appsrc(
+            caps=video_caps, is_live=is_live, do_timestamp=do_timestamp
+        )
         convert = element.videoconvert()
         encoder = element.x264enc(bitrate=bitrate)
 
@@ -123,9 +127,13 @@ class UDPWriter(VideoWriter):
         do_timestamp: bool = True,
     ):
         video_caps = caps.raw(width=width, height=height, fps=FPS(fps), format=format)
-        src = element.appsrc(caps=video_caps, is_live=is_live, do_timestamp=do_timestamp)
+        src = element.appsrc(
+            caps=video_caps, is_live=is_live, do_timestamp=do_timestamp
+        )
         convert = element.videoconvert()
-        encoder = element.x264enc(bitrate=bitrate, tune="zerolatency", speed_preset="ultrafast")
+        encoder = element.x264enc(
+            bitrate=bitrate, tune="zerolatency", speed_preset="ultrafast"
+        )
         payloader = element.create("rtph264pay", {"config-interval": 1, "pt": 96}, None)
         sink = element.udpsink(host=host, port=port)
 
@@ -149,7 +157,9 @@ class FileWriter(VideoWriter):
         do_timestamp: bool = True,
     ):
         video_caps = caps.raw(width=width, height=height, fps=FPS(fps), format=format)
-        src = element.appsrc(caps=video_caps, is_live=is_live, do_timestamp=do_timestamp)
+        src = element.appsrc(
+            caps=video_caps, is_live=is_live, do_timestamp=do_timestamp
+        )
         convert = element.videoconvert()
         encoder = element.x264enc(bitrate=bitrate)
         muxer = element.create("mp4mux", None, None)
