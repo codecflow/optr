@@ -1,6 +1,6 @@
 [project]
 name = "optr"
-version = "0.0.0a4"
+version = "0.0.0a5"
 description = "Unified toolkit for building, training, and testing digital and physical operators."
 readme = "README.md"
 requires-python = ">=3.12"

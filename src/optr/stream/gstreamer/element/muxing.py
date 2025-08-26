@@ -189,6 +189,8 @@ class SplitMuxSink(TypedDict, total=False):
     use_robust_muxing: bool
 
 
-def splitmuxsink(*, name: str | None = None, **props: Unpack[SplitMuxSink]) -> Gst.Element:
+def splitmuxsink(
+    *, name: str | None = None, **props: Unpack[SplitMuxSink]
+) -> Gst.Element:
     """Create splitmuxsink element with typed properties."""
     return create("splitmuxsink", props, name=name)

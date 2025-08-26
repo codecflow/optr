@@ -33,7 +33,7 @@ class Renderer:
 
         self.renderer = mujoco.Renderer(self.model, height, width)
         self.camera = resolve(self.model, camera) or -1
-        
+
         self.buffer = np.empty((height, width, 3), dtype=np.uint8)
 
     def render(self, camera: int | None = None) -> np.ndarray:
