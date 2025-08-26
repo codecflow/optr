@@ -742,7 +742,7 @@ wheels = [
 
 [[package]]
 name = "optr"
-version = "0.0.0a4"
+version = "0.0.0a6"
 source = { editable = "." }
 dependencies = [
     { name = "numpy" },

@@ -1,6 +1,6 @@
 [project]
 name = "optr"
-version = "0.0.0a5"
+version = "0.0.0a6"
 description = "Unified toolkit for building, training, and testing digital and physical operators."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -42,6 +42,7 @@ format = "ruff format src"
 check = "ruff check src"
 typing = "mypy src"
 test = "pytest src -v"
+clean = "rm -rf .mypy_cache .pytest_cache .ruff_cache dist"
 
 [project.optional-dependencies]
 desktop = ["mss", "pyautogui"]
