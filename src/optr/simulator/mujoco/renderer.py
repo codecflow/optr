@@ -34,7 +34,6 @@ class Renderer:
         self.renderer = mujoco.Renderer(self.model, height, width)
         resolved = resolve(self.model, camera)
         self.camera = -1 if resolved is None else resolved
-        self.camera = resolve(self.model, camera) or -1
 
         self.buffer = np.empty((height, width, 3), dtype=np.uint8)
 
