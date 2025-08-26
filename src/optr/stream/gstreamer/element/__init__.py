@@ -58,6 +58,7 @@ from .muxing import (
     RTPVP8Pay,
     RTPVP9Depay,
     RTPVP9Pay,
+    SplitMuxSink,
     WebMMux,
     avimux,
     flvmux,
@@ -73,6 +74,7 @@ from .muxing import (
     rtpvp8pay,
     rtpvp9depay,
     rtpvp9pay,
+    splitmuxsink,
     webmmux,
 )
 
@@ -282,6 +284,7 @@ __all__ = [
     "rtpvp8depay",
     "rtpvp9pay",
     "rtpvp9depay",
+    "splitmuxsink",
     "FLVMux",
     "MP4Mux",
     "QtMux",
@@ -298,6 +301,7 @@ __all__ = [
     "RTPVP8Depay",
     "RTPVP9Pay",
     "RTPVP9Depay",
+    "SplitMuxSink",
     # File elements
     "filesrc",
     "filesink",

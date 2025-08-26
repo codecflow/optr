@@ -10,6 +10,8 @@ class X264Enc(TypedDict, total=False):
     tune: str
     speed_preset: str
     key_int_max: int
+    bframes: int
+    threads: int
 
 
 def x264enc(*, name: str | None = None, **props: Unpack[X264Enc]) -> Gst.Element:

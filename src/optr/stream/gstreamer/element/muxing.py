@@ -7,6 +7,7 @@ from .base import create
 
 class FLVMux(TypedDict, total=False):
     streamable: bool
+    latency: int
 
 
 def flvmux(*, name: str | None = None, **props: Unpack[FLVMux]) -> Gst.Element:
@@ -174,3 +175,20 @@ def rtpvp9depay(
 ) -> Gst.Element:
     """Create rtpvp9depay element with typed properties."""
     return create("rtpvp9depay", props, name=name)
+
+
+class SplitMuxSink(TypedDict, total=False):
+    location: str
+    max_size_time: int
+    max_size_bytes: int
+    max_files: int
+    muxer: Gst.Element
+    async_finalize: bool
+    send_keyframe_requests: bool
+    alignment_threshold: int
+    use_robust_muxing: bool
+
+
+def splitmuxsink(*, name: str | None = None, **props: Unpack[SplitMuxSink]) -> Gst.Element:
+    """Create splitmuxsink element with typed properties."""
+    return create("splitmuxsink", props, name=name)
