@@ -8,7 +8,7 @@ from .simulation import Simulation
 
 
 class Renderer:
-    """Handles rendering frames from MuJoCo simulation with automatic caching."""
+    """Handles rendering frames from MuJoCo simulation."""
 
     def __init__(
         self,
@@ -22,7 +22,9 @@ class Renderer:
 
         Args:
             simulation: MuJoCo simulation object
-            config: Rendering configuration
+            width: Render width in pixels
+            height: Render height in pixels
+            camera: Default camera to render from
         """
         self.simulation = simulation
         self.width = width
@@ -30,40 +32,30 @@ class Renderer:
         self.model = self.simulation.state.model
 
         self.renderer = mujoco.Renderer(self.model, height, width)
-
-        self.camera = resolve(self.model, camera)
-
-        self.cache: dict[int | None, dict[int, np.ndarray]] = {}
+        self.camera = resolve(self.model, camera) or -1
+        
+        self.buffer = np.empty((height, width, 3), dtype=np.uint8)
 
     def render(self, camera: int | None = None) -> np.ndarray:
-        """Render current simulation state to RGB array with automatic caching.
+        """Render current simulation state to RGB array.
+
+        Returns a reference to internal buffer. The contents will be
+        overwritten on next render call. Copy if you need to preserve.
 
         Args:
             camera: Optional camera to render from
 
         Returns:
-            RGB array of shape (height, width, 3)
+            RGB array of shape (height, width, 3) - reference to internal buffer
         """
-
         data = self.simulation.state.data
-        camera = resolve(self.model, camera) or self.camera
+        camera = self.camera if camera is None else resolve(self.model, camera)
 
-        # Ensure camera is not None - default to -1 (free camera)
-        if camera is None:
-            camera = -1
+        self.renderer.update_scene(data, camera=camera)
 
-        cache = self.cache.get(camera, {})
-        time = self.simulation.state.data.time
-
-        if time not in cache:
-            self.renderer.update_scene(data, camera=camera)
-            frame = self.renderer.render()
-            cache[time] = frame
-            self.cache[camera] = cache
-
-        return cache[time]
+        return self.renderer.render(out=self.buffer)
 
     def close(self) -> None:
         """Clean up renderer resources."""
         self.renderer = None
-        self.cache = None
+        self.buffer = None
