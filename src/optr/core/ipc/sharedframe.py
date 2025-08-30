@@ -187,14 +187,14 @@ class SharedFrame:
         return self.shm.name
 
     @staticmethod
-    def create(nbytes: int, name: str | None = None) -> Self:
+    def create(nbytes: int, name: str | None = None):
         """Create new SharedFrame with specified size."""
         total_bytes = SharedFrame.HEADER_BYTES + 2 * nbytes
         shm = SharedMemory(create=True, size=total_bytes, name=name)
         return SharedFrame(shm, nbytes)
 
     @staticmethod
-    def attach(name: str, nbytes: int | None = None) -> Self:
+    def attach(name: str, nbytes: int | None = None):
         """Attach to existing SharedFrame. nbytes taken from header if not provided."""
         shm = SharedMemory(name=name, create=False)
         return SharedFrame(shm, nbytes)
