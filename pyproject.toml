@@ -1,6 +1,6 @@
 [project]
 name = "optr"
-version = "0.0.0a7"
+version = "0.0.0a8"
 description = "Unified toolkit for building, training, and testing digital and physical operators."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -38,10 +38,10 @@ build-backend = "hatchling.build"
 exclude = ["examples/", "tests/", "uv.lock", "ruff.toml"]
 
 [tool.taskipy.tasks]
-format = "ruff format src"
-check = "ruff check src"
+format = "ruff format"
+check = "ruff check"
 typing = "mypy src"
-test = "pytest src -v"
+test = "pytest src -v -p no:anchorpy"
 clean = "rm -rf .mypy_cache .pytest_cache .ruff_cache dist"
 
 [project.optional-dependencies]
@@ -52,6 +52,15 @@ inference = ["onnxruntime"]
 training = ["torch"]
 streaming = ["pygobject"]
 solana = ["solders", "solana", "anchorpy", "base58", "msgpack"]
+image = ["pillow", "imageio"]
+video = ["imageio[ffmpeg]"]
 
 [dependency-groups]
-dev = ["mypy>=1.17.1", "pytest", "ruff", "taskipy"]
+dev = ["mypy", "pytest", "ruff", "taskipy"]
+
+[tool.pytest.ini_options]
+addopts = "-p no:anchorpy -v"
+testpaths = ["src"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]

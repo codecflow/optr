@@ -4,32 +4,30 @@ import mujoco
 import numpy as np
 
 from .camera import resolve
-from .simulation import Simulation
 
 
 class Renderer:
-    """Handles rendering frames from MuJoCo simulation."""
+    """Minimal MuJoCo renderer - renders any data you provide."""
 
     def __init__(
         self,
-        simulation: Simulation,
+        model: mujoco.MjModel,
         /,
         width: int = 1920,
         height: int = 1080,
         camera: int | str | None = None,
     ):
-        """Initialize renderer with simulation and configuration.
+        """Initialize renderer with model and configuration.
 
         Args:
-            simulation: MuJoCo simulation object
+            model: MuJoCo model
             width: Render width in pixels
             height: Render height in pixels
             camera: Default camera to render from
         """
-        self.simulation = simulation
+        self.model = model
         self.width = width
         self.height = height
-        self.model = self.simulation.state.model
 
         self.renderer = mujoco.Renderer(self.model, height, width)
         resolved = resolve(self.model, camera)
@@ -37,26 +35,41 @@ class Renderer:
 
         self.buffer = np.empty((height, width, 3), dtype=np.uint8)
 
-    def render(self, camera: int | None = None) -> np.ndarray:
-        """Render current simulation state to RGB array.
+    def render(
+        self, data: mujoco.MjData, camera: int | str | None = None
+    ) -> np.ndarray:
+        """Render the provided data to RGB array.
 
         Returns a reference to internal buffer. The contents will be
         overwritten on next render call. Copy if you need to preserve.
 
         Args:
+            data: MuJoCo data to render
             camera: Optional camera to render from
 
         Returns:
             RGB array of shape (height, width, 3) - reference to internal buffer
         """
-        data = self.simulation.state.data
-        camera = self.camera if camera is None else resolve(self.model, camera)
+        if camera is None:
+            cam = self.camera
+        else:
+            resolved = resolve(self.model, camera)
+            cam = -1 if resolved is None else resolved
 
-        self.renderer.update_scene(data, camera=camera)
-
+        self.renderer.update_scene(data, camera=cam)
         return self.renderer.render(out=self.buffer)
 
     def close(self) -> None:
         """Clean up renderer resources."""
+        if self.renderer:
+            self.renderer.close()
         self.renderer = None
         self.buffer = None
+
+    def __enter__(self):
+        """Context manager entry."""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit."""
+        self.close()
