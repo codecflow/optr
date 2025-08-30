@@ -48,16 +48,10 @@ clean = "rm -rf .mypy_cache .pytest_cache .ruff_cache dist"
 desktop = ["mss", "pyautogui"]
 vision = ["opencv-python"]
 simulation = ["mujoco"]
-ml = ["torch", "onnxruntime"]
+inference = ["onnxruntime"]
+training = ["torch"]
 streaming = ["pygobject"]
 solana = ["solders", "solana", "anchorpy", "base58", "msgpack"]
-all = [
-    "optr[desktop]",
-    "optr[vision]",
-    "optr[simulation]",
-    "optr[ml]",
-    "optr[streaming]",
-]
 
 [dependency-groups]
 dev = ["mypy>=1.17.1", "pytest", "ruff", "taskipy"]
