@@ -1,0 +1,33 @@
+name: Build CI Image
+
+on:
+  push:
+    paths:
+      - 'ci.dockerfile'
+      - '.github/workflows/ci.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      
+    steps:
+      - uses: actions/checkout@v5
+      
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build and Push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./ci.dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository }}:ci

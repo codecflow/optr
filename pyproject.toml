@@ -45,7 +45,7 @@ test = "pytest"
 clean = "rm -rf .mypy_cache .pytest_cache .ruff_cache dist"
 
 [project.optional-dependencies]
-desktop = ["mss", "pyautogui"]
+desktop = ["mss", "pyautogui", "types-pyautogui"]
 vision = ["opencv-python"]
 simulation = ["mujoco"]
 inference = ["onnxruntime"]
