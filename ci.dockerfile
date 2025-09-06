@@ -1,34 +1,19 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
-# Prevent interactive prompts during package installation
-ENV DEBIAN_FRONTEND=noninteractive
+ARG DEBIAN_FRONTEND=noninteractive
 
-# Install system dependencies
 RUN apt-get update && apt-get install -y \
-    # Python and build essentials
-    python3 python3-pip python3-dev \
-    build-essential pkg-config \
-    # GObject and GStreamer dependencies
-    libgirepository1.0-dev \
-    libcairo2-dev \
-    python3-gi python3-gi-cairo \
-    gir1.2-gtk-3.0 \
-    gstreamer1.0-tools \
-    gstreamer1.0-plugins-base \
-    gstreamer1.0-plugins-good \
-    gstreamer1.0-plugins-bad \
-    libgstreamer1.0-dev \
-    libgstreamer-plugins-base1.0-dev \
-    # Other useful tools
     git curl ca-certificates \
+    build-essential pkg-config meson ninja-build cmake \
+    python3 python3-dev python3-venv \
+    python3-gi python3-gi-cairo gir1.2-gstreamer-1.0 \
+    libgirepository-2.0-dev libglib2.0-dev libcairo2-dev libffi-dev \
+    gstreamer1.0-tools gstreamer1.0-plugins-base gstreamer1.0-plugins-good \
+    gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav \
+    libegl1 libgles2 libgl1-mesa-dri libgbm1 libosmesa6 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install uv
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.cargo/bin:${PATH}"
 
-# Set working directory
 WORKDIR /workspace
-
-# Reset DEBIAN_FRONTEND
-ENV DEBIAN_FRONTEND=
