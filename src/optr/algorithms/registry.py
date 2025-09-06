@@ -10,7 +10,7 @@ class Registry:
     Central registry for algorithms
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._algorithms: dict[str, type[Algorithm]] = {}
         self._instances: dict[str, Algorithm] = {}
 

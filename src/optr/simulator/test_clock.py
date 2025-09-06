@@ -6,12 +6,12 @@ import time
 
 import pytest
 
-from .clock import Clock, Null
+from .clock import Null, RealTime
 
 
 def test_clock_creation():
     """Test basic clock creation"""
-    clock = Clock(fps=30, realtime=True)
+    clock = RealTime(fps=30, realtime=True)
     assert clock.fps == 30
     assert clock.realtime is True
     assert clock.duration == 1.0 / 30
@@ -19,14 +19,14 @@ def test_clock_creation():
 
 def test_clock_with_no_fps():
     """Test clock with no FPS limit"""
-    clock = Clock(fps=None, realtime=True)
+    clock = RealTime(fps=None, realtime=True)
     assert clock.fps is None
     assert clock.duration == 0
 
 
 def test_clock_non_realtime():
     """Test clock with realtime disabled"""
-    clock = Clock(fps=30, realtime=False)
+    clock = RealTime(fps=30, realtime=False)
     assert clock.realtime is False
 
     # tick and sync should do nothing when not realtime
@@ -39,7 +39,7 @@ def test_clock_non_realtime():
 
 def test_clock_timing_control():
     """Test clock FPS timing control"""
-    clock = Clock(fps=10, realtime=True)
+    clock = RealTime(fps=10, realtime=True)
 
     start_time = time.time()
     clock.tick()
@@ -52,7 +52,7 @@ def test_clock_timing_control():
 
 def test_clock_fast_execution():
     """Test clock doesn't delay when execution is already slow"""
-    clock = Clock(fps=1000, realtime=True)  # Very high FPS
+    clock = RealTime(fps=1000, realtime=True)  # Very high FPS
 
     start_time = time.time()
     clock.tick()
@@ -89,13 +89,13 @@ def test_null_clock_performance():
 def test_clock_zero_fps():
     """Test clock with zero FPS"""
     with pytest.raises(ValueError):
-        Clock(fps=0, realtime=True)
+        RealTime(fps=0, realtime=True)
 
 
 def test_clock_negative_fps():
     """Test clock with negative FPS"""
     with pytest.raises(ValueError):
-        Clock(fps=-10, realtime=True)
+        RealTime(fps=-10, realtime=True)
 
 
 if __name__ == "__main__":

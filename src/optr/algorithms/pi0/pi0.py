@@ -13,7 +13,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-from ...operator.action import Action
+from ...operator.action import Action, action
 from ...operator.types import State
 from ..base import Algorithm
 from .flow import (
@@ -102,18 +102,18 @@ class PI0(Algorithm):
         super().__init__(config)
 
         # Core parameters
-        self.action_dim = config.get("action_dim", 7)
-        self.action_horizon = config.get("action_horizon", 10)
-        self.num_flow_steps = config.get("num_flow_steps", 10)
-        self.flow_sigma_min = config.get("flow_sigma_min", 0.001)
-        self.hidden_dim = config.get("hidden_dim", 512)
-        self.device = torch.device(config.get("device", "cpu"))
+        self.action_dim = config.get("action_dim", 7) if config else 7
+        self.action_horizon = config.get("action_horizon", 10) if config else 10
+        self.num_flow_steps = config.get("num_flow_steps", 10) if config else 10
+        self.flow_sigma_min = config.get("flow_sigma_min", 0.001) if config else 0.001
+        self.hidden_dim = config.get("hidden_dim", 512) if config else 512
+        self.device = torch.device(config.get("device", "cpu") if config else "cpu")
 
         # VLM setup
-        vlm_model = config.get("vlm_model", "simple")
+        vlm_model = config.get("vlm_model", "simple") if config else "simple"
         if vlm_model == "paligemma":
             try:
-                self.vlm = PaliGemmaVLM(
+                self.vlm: SimpleVLM | PaliGemmaVLM = PaliGemmaVLM(
                     device=str(self.device),
                     embedding_dim=self.hidden_dim,
                 )
@@ -133,13 +133,13 @@ class PI0(Algorithm):
         self.tokenizer = VLMTokenizer()
 
         # Multi-modal fusion
-        use_moe = config.get("use_moe", True)
+        use_moe = config.get("use_moe", True) if config else True
         if use_moe:
-            self.fusion = MultiModalMoE(
+            self.fusion: nn.Module = MultiModalMoE(
                 modality_dims={
                     "vision": self.vlm.embedding_dim,
                     "language": self.vlm.embedding_dim,
-                    "proprio": config.get("proprio_dim", 32),
+                    "proprio": config.get("proprio_dim", 32) if config else 32,
                 },
                 hidden_dim=self.hidden_dim,
                 output_dim=self.hidden_dim,
@@ -147,7 +147,9 @@ class PI0(Algorithm):
             ).to(self.device)
         else:
             # Simple concatenation fusion
-            total_dim = self.vlm.embedding_dim * 2 + config.get("proprio_dim", 32)
+            total_dim = self.vlm.embedding_dim * 2 + (
+                config.get("proprio_dim", 32) if config else 32
+            )
             self.fusion = nn.Sequential(
                 nn.Linear(total_dim, self.hidden_dim),
                 nn.ReLU(),
@@ -168,7 +170,7 @@ class PI0(Algorithm):
         ).to(self.device)
 
         # Proprioception encoder
-        proprio_dim = config.get("proprio_dim", 32)
+        proprio_dim = config.get("proprio_dim", 32) if config else 32
         self.proprio_encoder = nn.Sequential(
             nn.Linear(proprio_dim, self.hidden_dim),
             nn.ReLU(),
@@ -176,11 +178,11 @@ class PI0(Algorithm):
         ).to(self.device)
 
         # Training parameters
-        self.learning_rate = config.get("learning_rate", 1e-4)
-        self.optimizer = None
+        self.learning_rate = config.get("learning_rate", 1e-4) if config else 1e-4
+        self.optimizer: optim.Optimizer | None = None
 
         # Storage for patterns (for non-neural fallback)
-        self.stored_patterns = []
+        self.stored_patterns: list[dict[str, torch.Tensor]] = []
 
     async def predict(
         self,
@@ -199,7 +201,7 @@ class PI0(Algorithm):
         """
         with torch.no_grad():
             # Extract features
-            features = self._extract_features(state, context)
+            self._extract_features(state, context)
 
             # Initialize action with noise
             batch_size = 1
@@ -222,7 +224,7 @@ class PI0(Algorithm):
             action_seq = denoise_trajectory(
                 action_seq,
                 velocity_fn,
-                features.unsqueeze(0) if features.dim() == 1 else features,
+                None,  # features not used in current implementation
                 steps=self.num_flow_steps,
                 sigma_min=self.flow_sigma_min,
             )
@@ -230,12 +232,10 @@ class PI0(Algorithm):
             # Extract first action
             first_action = action_seq[0, 0].cpu().numpy()
 
-            return Action(
-                type="joint_position",
-                params={
-                    "values": first_action.tolist(),
-                    "horizon": self.action_horizon,
-                },
+            return action(
+                "joint_position",
+                values=first_action.tolist(),
+                horizon=self.action_horizon,
             )
 
     async def train(
@@ -462,7 +462,7 @@ class PI0(Algorithm):
             Proprioception tensor
         """
         # Extract relevant values
-        values = []
+        values: list[float] = []
 
         # Common keys for proprioception
         for key in ["joint_positions", "joint_velocities", "end_effector_pos"]:
@@ -474,7 +474,7 @@ class PI0(Algorithm):
                     values.append(val)
 
         # Pad or truncate to expected dimension
-        proprio_dim = self.config.get("proprio_dim", 32)
+        proprio_dim = self.config.get("proprio_dim", 32) if self.config else 32
         if len(values) < proprio_dim:
             values.extend([0.0] * (proprio_dim - len(values)))
         else:
@@ -492,7 +492,10 @@ class PI0(Algorithm):
         Returns:
             Action tensor
         """
-        values = action.params.get("values", [])
+        if hasattr(action, "params") and action.params:
+            values = action.params.get("values", [])
+        else:
+            values = getattr(action, "values", [])
 
         # Ensure correct shape
         if not values:

@@ -3,18 +3,16 @@ Core action system
 Simple, composable, and extensible
 """
 
-from typing import Required, TypedDict
+from types import SimpleNamespace
+from typing import Protocol
 
 
-class Action(TypedDict, total=False):
-    """Base action type - minimal and extensible"""
-
-    type: Required[str]
+class Action(Protocol):
+    type: str
 
 
-def action(type: str, **params) -> Action:
-    """Create an action with type and spread params"""
-    return {"type": type, **params}
+def action(type: str, **parms) -> Action:
+    return SimpleNamespace(type=type, **parms)
 
 
 def chain(*actions: Action) -> list[Action]:

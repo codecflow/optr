@@ -3,6 +3,7 @@ Dataset management for training OPTR algorithms
 """
 
 import pickle
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -30,8 +31,8 @@ class Dataset:
         self.storage_dir = Path(storage_dir or "./datasets")
         self.storage_dir.mkdir(parents=True, exist_ok=True)
 
-        self.episodes = []
-        self.samples = []
+        self.episodes: list[Episode] = []
+        self.samples: list[dict[str, Any]] = []
         self.metadata = {
             "name": name,
             "num_episodes": 0,
@@ -149,7 +150,7 @@ class Dataset:
         if shuffle:
             if seed is not None:
                 np.random.seed(seed)
-            np.random.shuffle(samples)
+            np.random.shuffle(samples)  # type: ignore
 
         n = len(samples)
         train_end = int(n * train_ratio)
@@ -212,7 +213,7 @@ class Dataset:
         samples = self.samples.copy()
 
         if shuffle:
-            np.random.shuffle(samples)
+            np.random.shuffle(samples)  # type: ignore
 
         n_batches = len(samples) // batch_size
 
@@ -285,14 +286,19 @@ class Dataset:
         # Count action types
         for sample in self.samples:
             if sample and sample.get("action"):
-                action_type = sample["action"].type
-                stats["action_types"][action_type] = (
-                    stats["action_types"].get(action_type, 0) + 1
-                )
+                action = sample["action"]
+                if action is not None and hasattr(action, "type"):
+                    action_type = action.type
+                    if isinstance(stats["action_types"], dict):
+                        stats["action_types"][action_type] = (
+                            stats["action_types"].get(action_type, 0) + 1
+                        )
 
         return stats
 
-    def filter_samples(self, filter_func: callable) -> "Dataset":
+    def filter_samples(
+        self, filter_func: Callable[[dict[str, Any]], bool]
+    ) -> "Dataset":
         """
         Create filtered dataset
 
@@ -308,7 +314,10 @@ class Dataset:
 
         return filtered
 
-    def augment_samples(self, augment_func: callable) -> "Dataset":
+    def augment_samples(
+        self,
+        augment_func: Callable[[dict[str, Any]], dict[str, Any] | list[dict[str, Any]]],
+    ) -> "Dataset":
         """
         Create augmented dataset
 

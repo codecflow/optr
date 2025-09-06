@@ -55,7 +55,7 @@ class Trainer:
 
         # Training state
         self.current_epoch = 0
-        self.training_history = {
+        self.training_history: dict[str, Any] = {
             "epochs": [],
             "train_metrics": [],
             "val_metrics": [],
@@ -97,9 +97,9 @@ class Trainer:
         Returns:
             Training history
         """
-        epochs = epochs or self.config["epochs"]
-        batch_size = self.config["batch_size"]
-
+        epochs = epochs or int(self.config["epochs"])
+        batch_size = int(self.config["batch_size"])
+        val_dataset: Dataset | None = None
         # Split dataset if no validation provided
         if validation_dataset is None and self.config["validation_split"] > 0:
             train_dataset, val_dataset, _ = dataset.split(
@@ -125,7 +125,7 @@ class Trainer:
             train_metrics = await self._train_epoch(train_dataset, batch_size)
 
             # Validation
-            val_metrics = {}
+            val_metrics: dict[str, Any] = {}
             if val_dataset:
                 val_metrics = await self._validate(val_dataset, batch_size)
 
@@ -135,7 +135,7 @@ class Trainer:
             self._log_epoch(epoch, train_metrics, val_metrics, epoch_time)
 
             # Save checkpoint
-            if (epoch + 1) % self.config["checkpoint_interval"] == 0:
+            if (epoch + 1) % int(self.config["checkpoint_interval"]) == 0:
                 self._save_checkpoint(epoch, train_metrics, val_metrics)
 
             # Early stopping
@@ -164,7 +164,7 @@ class Trainer:
         Returns:
             Epoch metrics
         """
-        epoch_metrics = {"loss": 0, "accuracy": 0, "samples": 0}
+        epoch_metrics: dict[str, Any] = {"loss": 0.0, "accuracy": 0.0, "samples": 0}
 
         batch_count = 0
 
@@ -181,21 +181,27 @@ class Trainer:
                 epoch_metrics["samples"] += len(batch)
 
                 if "loss" in batch_metrics:
-                    epoch_metrics["loss"] += batch_metrics["loss"] * len(batch)
+                    epoch_metrics["loss"] += float(batch_metrics["loss"]) * len(batch)
 
                 if "accuracy" in batch_metrics:
-                    epoch_metrics["accuracy"] += batch_metrics["accuracy"] * len(batch)
+                    epoch_metrics["accuracy"] += float(batch_metrics["accuracy"]) * len(
+                        batch
+                    )
 
             batch_count += 1
 
             # Log progress
-            if batch_count % self.config["log_interval"] == 0:
+            if batch_count % int(self.config["log_interval"]) == 0:
                 logger.debug(f"Batch {batch_count}: {batch_metrics}")
 
         # Average metrics
         if epoch_metrics["samples"] > 0:
-            epoch_metrics["loss"] /= epoch_metrics["samples"]
-            epoch_metrics["accuracy"] /= epoch_metrics["samples"]
+            epoch_metrics["loss"] = (
+                float(epoch_metrics["loss"]) / epoch_metrics["samples"]
+            )
+            epoch_metrics["accuracy"] = (
+                float(epoch_metrics["accuracy"]) / epoch_metrics["samples"]
+            )
 
         return epoch_metrics
 
@@ -210,7 +216,7 @@ class Trainer:
         Returns:
             Validation metrics
         """
-        val_metrics = {"loss": 0, "accuracy": 0, "samples": 0}
+        val_metrics: dict[str, Any] = {"loss": 0.0, "accuracy": 0.0, "samples": 0}
 
         # Iterate over validation batches
         for batch in dataset.iterate_batches(batch_size, shuffle=False):
@@ -227,11 +233,13 @@ class Trainer:
                     correct += 1
 
             val_metrics["samples"] += len(batch)
-            val_metrics["accuracy"] += correct
+            val_metrics["accuracy"] = float(val_metrics["accuracy"]) + correct
 
         # Average metrics
         if val_metrics["samples"] > 0:
-            val_metrics["accuracy"] /= val_metrics["samples"]
+            val_metrics["accuracy"] = (
+                float(val_metrics["accuracy"]) / val_metrics["samples"]
+            )
 
         return val_metrics
 
@@ -248,7 +256,7 @@ class Trainer:
         prepared = []
 
         for sample in batch:
-            prepared_sample = {
+            prepared_sample: dict[str, Any] = {
                 "state": sample.get("state"),
                 "action": sample.get("action"),
                 "next_state": sample.get("next_state"),
@@ -283,7 +291,7 @@ class Trainer:
         epoch_time: float,
     ):
         """Log epoch results"""
-        log_msg = f"Epoch {epoch + 1}/{self.config['epochs']} - "
+        log_msg = f"Epoch {epoch + 1}/{int(self.config['epochs'])} - "
         log_msg += f"Time: {epoch_time:.2f}s - "
 
         if train_metrics:
@@ -307,8 +315,10 @@ class Trainer:
         # Check if this is the best model
         is_best = False
         if val_metrics and "accuracy" in val_metrics:
-            if val_metrics["accuracy"] > self.training_history.get(
-                "best_val_metric", 0
+            best_val_metric = self.training_history.get("best_val_metric", 0)
+            if (
+                isinstance(best_val_metric, int | float)
+                and val_metrics["accuracy"] > best_val_metric
             ):
                 self.training_history["best_val_metric"] = val_metrics["accuracy"]
                 self.training_history["best_epoch"] = epoch
@@ -342,15 +352,17 @@ class Trainer:
         if not val_metrics or "accuracy" not in val_metrics:
             return False
 
-        patience = self.config["early_stopping_patience"]
+        patience = int(self.config["early_stopping_patience"])
         if patience <= 0:
             return False
 
         # Check if validation hasn't improved
         best_epoch = self.training_history.get("best_epoch", 0)
-        epochs_without_improvement = self.current_epoch - best_epoch
+        if isinstance(best_epoch, int):
+            epochs_without_improvement = self.current_epoch - best_epoch
+            return epochs_without_improvement >= patience
 
-        return epochs_without_improvement >= patience
+        return False
 
     def _save_final_model(self):
         """Save final trained model"""
@@ -389,7 +401,8 @@ class Trainer:
 
         self.current_epoch = state.get("epoch", 0)
         self.training_history = state.get("history", {})
-        self.config.update(state.get("config", {}))
+        if isinstance(self.training_history, dict):
+            self.config.update(state.get("config", {}))
 
         logger.info(f"Loaded checkpoint from epoch {self.current_epoch + 1}")
 
@@ -408,9 +421,9 @@ class Trainer:
         Returns:
             Evaluation metrics
         """
-        batch_size = batch_size or self.config["batch_size"]
+        batch_size = batch_size or int(self.config["batch_size"])
 
-        metrics = {
+        metrics: dict[str, Any] = {
             "accuracy": 0,
             "samples": 0,
             "action_type_accuracy": {},
@@ -425,7 +438,7 @@ class Trainer:
 
         # Detailed analysis
         for sample in test_dataset.samples:
-            if sample.get("action"):
+            if sample.get("action") and hasattr(sample["action"], "type"):
                 action_type = sample["action"].type
 
                 if action_type not in metrics["action_type_accuracy"]:
@@ -438,14 +451,15 @@ class Trainer:
                     self.algorithm.predict(sample["state"], sample.get("context"))
                 )
 
-                metrics["action_type_accuracy"][action_type]["total"] += 1
+                if isinstance(metrics["action_type_accuracy"][action_type], dict):
+                    metrics["action_type_accuracy"][action_type]["total"] += 1
 
-                if self._actions_match(predicted, sample["action"]):
-                    metrics["action_type_accuracy"][action_type]["correct"] += 1
+                    if self._actions_match(predicted, sample["action"]):
+                        metrics["action_type_accuracy"][action_type]["correct"] += 1
 
         # Calculate per-type accuracy
-        for _, counts in metrics["action_type_accuracy"].items():
-            if counts["total"] > 0:
+        for _action_type, counts in metrics["action_type_accuracy"].items():
+            if isinstance(counts, dict) and counts["total"] > 0:
                 counts["accuracy"] = counts["correct"] / counts["total"]
 
         return metrics

@@ -43,7 +43,9 @@ class Episode:
         """
         step = {
             "timestamp": time.time(),
-            "action": {"type": action.type, "params": action.params},
+            "action": dict(action)
+            if isinstance(action, dict)
+            else {"type": action.type},
             "state_before": self._serialize_state(state_before),
             "state_after": self._serialize_state(state_after) if state_after else None,
             "result": result,
@@ -110,7 +112,7 @@ class Episode:
         data = json.loads(json_str)
         return cls.from_dict(data)
 
-    def _serialize_state(self, state: State) -> dict[str, Any]:
+    def _serialize_state(self, state: State) -> dict[str, Any] | None:
         """Serialize state for storage"""
         if not state:
             return None

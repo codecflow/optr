@@ -7,9 +7,9 @@ import os
 from pathlib import Path
 
 try:
-    from solana.keypair import Keypair
     from solana.rpc.api import Client
-    from solana.rpc.commitment import Confirmed
+    from solana.rpc.commitment import Commitment
+    from solders.keypair import Keypair
 except ImportError as e:
     raise ImportError("Install solana package: pip install 'optr[solana]'") from e
 
@@ -44,7 +44,7 @@ def load_wallet(path: str | Path | None = None) -> Keypair:
     with open(path) as f:
         secret_key = json.load(f)
 
-    return Keypair.from_secret_key(bytes(secret_key))
+    return Keypair.from_seed(bytes(secret_key[:32]))
 
 
 def get_balance(
@@ -66,13 +66,13 @@ def get_balance(
         print(f"Balance: {balance} SOL")
     """
     client = Client(rpc_url)
-    response = client.get_balance(wallet.public_key, commitment=Confirmed)
+    response = client.get_balance(wallet.pubkey(), commitment=Commitment("confirmed"))
 
-    if response["result"]["value"] is None:
+    if response.value is None:
         return 0.0
 
     # Convert lamports to SOL (1 SOL = 1e9 lamports)
-    return response["result"]["value"] / 1e9
+    return response.value / 1e9
 
 
 def fund_wallet(
@@ -108,8 +108,8 @@ def fund_wallet(
     lamports = int(amount * 1e9)
 
     try:
-        response = client.request_airdrop(wallet.public_key, lamports)
-        return response["result"]
+        response = client.request_airdrop(wallet.pubkey(), lamports)
+        return str(response.value)
     except Exception as e:
         print(f"Airdrop failed: {e}")
         return None
@@ -128,8 +128,8 @@ def create_wallet() -> tuple[Keypair, list[int]]:
         with open("wallet.json", "w") as f:
             json.dump(secret, f)
     """
-    keypair = Keypair.generate()
-    secret_key = list(keypair.secret_key)
+    keypair = Keypair()
+    secret_key = list(bytes(keypair))
     return keypair, secret_key
 
 
@@ -147,4 +147,4 @@ def get_wallet_address(wallet: Keypair) -> str:
         address = get_wallet_address(wallet)
         print(f"Address: {address}")
     """
-    return str(wallet.public_key)
+    return str(wallet.pubkey())

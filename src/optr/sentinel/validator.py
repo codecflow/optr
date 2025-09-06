@@ -25,17 +25,21 @@ class Validator:
 
         schema = self.schemas[action.type]
 
+        # Cast Action to dict to access params
+        action_dict = dict(action)  # type: ignore
+        params = {k: v for k, v in action_dict.items() if k != "type"}
+
         # Check required parameters
         if "required" in schema:
             for param in schema["required"]:
-                if param not in action.params:
+                if param not in params:
                     return False, f"Missing required parameter: {param}"
 
         # Check parameter types
         if "types" in schema:
             for param, expected_type in schema["types"].items():
-                if param in action.params:
-                    if not isinstance(action.params[param], expected_type):
+                if param in params:
+                    if not isinstance(params[param], expected_type):
                         return (
                             False,
                             f"Parameter {param} must be of type {expected_type.__name__}",
@@ -44,8 +48,8 @@ class Validator:
         # Check parameter ranges/constraints
         if "constraints" in schema:
             for param, constraint in schema["constraints"].items():
-                if param in action.params:
-                    value = action.params[param]
+                if param in params:
+                    value = params[param]
                     if "min" in constraint and value < constraint["min"]:
                         return (
                             False,

@@ -2,7 +2,7 @@
 
 import time
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, TypedDict
 
 from .socket import BaseSocketInput
 
@@ -14,6 +14,13 @@ class KeyboardInputConfig:
     socket_path: str = "/tmp/robot/keyboard.sock"
     max_connections: int = 5
     timeout: float = 1.0
+
+
+class Metrics(TypedDict, total=False):
+    presses: int
+    releases: int
+    invalid: int
+    updated: float | None
 
 
 class KeyboardInput(BaseSocketInput):
@@ -67,7 +74,7 @@ class KeyboardInput(BaseSocketInput):
         self._release_times: dict[str, float] = {}
 
         # Performance metrics
-        self.metrics = {"presses": 0, "releases": 0, "invalid": 0, "updated": None}
+        self.metrics: Metrics = Metrics(presses=0, releases=0, invalid=0)
 
     def handle(self, cmd: str, params: list) -> tuple[bool, str]:
         """Handle input-specific commands."""

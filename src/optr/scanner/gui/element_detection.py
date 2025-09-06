@@ -135,7 +135,7 @@ class ElementDetector:
         sorted_elements = sorted(elements, key=lambda x: x["rectangle"][1])
 
         rows = []
-        current_row = []
+        current_row: list[dict[str, Any]] = []
         previous_y = sorted_elements[0]["rectangle"][1]
 
         for element in sorted_elements:

@@ -8,7 +8,7 @@ class Camera(NamedTuple):
     name: str
 
 
-def list(model: mujoco.MjModel) -> list[Camera]:
+def list(model: mujoco.MjModel):
     """Get list of available cameras in the model.
 
     Args:

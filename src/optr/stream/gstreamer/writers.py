@@ -1,4 +1,3 @@
-import numpy as np
 from gi.repository import Gst
 
 from optr.core.io.protocols import Closer, Writer
@@ -7,7 +6,7 @@ from optr.stream.fps import FPS, ConvertibleToFPS
 from . import buffer, caps, control, element, pipeline
 
 
-class VideoWriter(Writer[np.ndarray], Closer):
+class VideoWriter(Writer[bytes], Closer):
     """Base video writer implementing Writer and Closer protocols."""
 
     def __init__(
@@ -29,10 +28,10 @@ class VideoWriter(Writer[np.ndarray], Closer):
     def _start_pipeline(self) -> None:
         """Start the pipeline if not already started."""
         if not self.started:
-            control.play_sync(self.pipe)
+            control.play(self.pipe)
             self.started = True
 
-    def write(self, frame: np.ndarray) -> None:
+    def write(self, frame: bytes) -> None:
         """Write a frame to the output."""
         # Start pipeline on first write if not already started
         if not self.started:
@@ -55,7 +54,7 @@ class VideoWriter(Writer[np.ndarray], Closer):
                 control.wait_for_eos(self.pipe, timeout_seconds=self.eos_timeout)
         finally:
             if self.started:
-                control.stop_sync(self.pipe)
+                control.stop(self.pipe)
 
 
 class SHMWriter(VideoWriter):

@@ -8,7 +8,7 @@ from .iterator import IterableReader, ReaderIterator, copy, fanout
 class ListWriter:
     """Simple writer that collects items into a list for testing."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.items: list = []
 
     def write(self, item) -> None:

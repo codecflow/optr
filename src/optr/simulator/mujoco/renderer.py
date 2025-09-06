@@ -64,7 +64,7 @@ class Renderer:
         if self.renderer:
             self.renderer.close()
         self.renderer = None
-        self.buffer = None
+        self.buffer = None  # type: ignore
 
     def __enter__(self):
         """Context manager entry."""

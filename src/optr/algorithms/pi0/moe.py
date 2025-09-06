@@ -36,7 +36,7 @@ class Expert(nn.Module):
 
         # Activation
         if activation == "gelu":
-            self.activation = nn.GELU()
+            self.activation: nn.Module = nn.GELU()
         elif activation == "relu":
             self.activation = nn.ReLU()
         elif activation == "silu":
@@ -161,7 +161,7 @@ class MixtureOfExperts(nn.Module):
 
         # Create router
         if routing_method == "learned":
-            self.router = Router(input_dim, num_experts, top_k)
+            self.router: Router | None = Router(input_dim, num_experts, top_k)
         else:
             self.router = None
 
@@ -305,7 +305,7 @@ class MultiModalMoE(nn.Module):
         # Create fusion mechanism
         if fusion_method == "moe":
             # MoE for fusion
-            self.fusion = MixtureOfExperts(
+            self.fusion: nn.Module = MixtureOfExperts(
                 input_dim=hidden_dim,
                 num_experts=len(modality_dims),
                 expert_dim=hidden_dim * 2,

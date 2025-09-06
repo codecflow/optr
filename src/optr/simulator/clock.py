@@ -1,9 +1,22 @@
 """Timing utilities for simulation runners."""
 
 import time
+from typing import Protocol
 
 
-class Clock:
+class Clock(Protocol):
+    """Protocol for simulation clocks."""
+
+    def tick(self):
+        """Mark the start of a frame."""
+        ...
+
+    def sync(self):
+        """Sleep to maintain target FPS if needed."""
+        ...
+
+
+class RealTime(Clock):
     """Manages simulation timing and FPS control."""
 
     def __init__(self, /, fps: int | None = 30, realtime: bool = True):
@@ -35,7 +48,7 @@ class Clock:
                 time.sleep(sleep)
 
 
-class Null:
+class Null(Clock):
     """No-op clock for maximum speed computation."""
 
     def tick(self):

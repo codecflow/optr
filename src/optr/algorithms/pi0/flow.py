@@ -12,7 +12,7 @@ import torch.nn.functional as F
 
 def sample_timesteps(
     batch_size: int,
-    device: torch.device = None,
+    device: torch.device | None = None,
     alpha: float = 1.5,
     beta: float = 1.0,
     sigma_min: float = 0.001,
@@ -187,7 +187,7 @@ class FlowPredictor(nn.Module):
         if output_dim is None:
             output_dim = input_dim
 
-        layers = []
+        layers: list[nn.Module] = []
         for i in range(num_layers):
             in_d = input_dim if i == 0 else hidden_dim
             out_d = output_dim if i == num_layers - 1 else hidden_dim

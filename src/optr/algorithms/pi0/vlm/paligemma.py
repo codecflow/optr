@@ -56,12 +56,12 @@ class PaliGemmaVLM(VLMInterface):
             # Projection layers to match embedding dim
             actual_dim = self.model.config.text_config.hidden_size
             if actual_dim != embedding_dim:
-                self.image_projection = nn.Linear(actual_dim, embedding_dim).to(
-                    self._device
-                )
-                self.text_projection = nn.Linear(actual_dim, embedding_dim).to(
-                    self._device
-                )
+                self.image_projection: nn.Module = nn.Linear(
+                    actual_dim, embedding_dim
+                ).to(self._device)
+                self.text_projection: nn.Module = nn.Linear(
+                    actual_dim, embedding_dim
+                ).to(self._device)
             else:
                 self.image_projection = nn.Identity()
                 self.text_projection = nn.Identity()

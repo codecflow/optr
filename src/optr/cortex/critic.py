@@ -16,7 +16,7 @@ class Critic:
 
     def __init__(self, model_provider: str | None = None):
         self.model_provider = model_provider
-        self.evaluation_history = []
+        self.evaluation_history: list[dict[str, Any]] = []
 
     async def evaluate_action(
         self,
@@ -33,7 +33,7 @@ class Critic:
             - reason: Explanation of the evaluation
             - suggestions: Dict with improvement suggestions
         """
-        evaluation = {
+        evaluation: dict[str, Any] = {
             "action": action,
             "state_change": self._analyze_state_change(state_before, state_after),
             "goal_alignment": self._check_goal_alignment(action, goal)
@@ -74,7 +74,7 @@ class Critic:
         Returns:
             Dict with critique including potential issues and improvements
         """
-        critique = {
+        critique: dict[str, Any] = {
             "feasibility": self._assess_feasibility(plan, current_state),
             "efficiency": self._assess_efficiency(plan),
             "risks": self._identify_risks(plan),
@@ -111,11 +111,13 @@ class Critic:
 
         # Generate correction based on failure type
         if failure_analysis["type"] == "parameter_error":
-            # Adjust parameters
+            # Adjust parameters - cast Action to dict to access params
+            action_dict = dict(failed_action)  # type: ignore
+            params = {k: v for k, v in action_dict.items() if k != "type"}
             corrected_params = self._adjust_parameters(
-                failed_action.params, failure_analysis["details"]
+                params, failure_analysis["details"]
             )
-            return action(failed_action["type"], **corrected_params)
+            return action(failed_action.type, **corrected_params)
 
         return None
 

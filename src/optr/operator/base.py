@@ -20,9 +20,9 @@ class Operator:
                        e.g. {"desktop": DesktopConnector(), "robot": RobotConnector()}
         """
         self.connectors = connectors
-        self._states = {}
+        self._states: dict[str, State] = {}
 
-    async def get_state(self, connector_name: str = None) -> State:
+    async def get_state(self, connector_name: str | None = None) -> State:
         """Get state from specific connector or first available"""
         if connector_name:
             if connector_name not in self.connectors:
@@ -38,7 +38,7 @@ class Operator:
         return state
 
     async def execute_action(
-        self, action_type: str, connector_name: str = None, **params
+        self, action_type: str, connector_name: str | None = None, **params
     ) -> bool:
         """Execute action on specific connector"""
         if connector_name:
@@ -66,7 +66,11 @@ class Operator:
         action = task.get("action")
         params = task.get("params", {})
 
-        return await self.execute_action(action, connector_name, **params)
+        if not action or not isinstance(action, str):
+            raise ValueError("Task must have a valid 'action' field of type str")
+
+        # After the check above, action is guaranteed to be str
+        return await self.execute_action(str(action), connector_name, **params)
 
     def add_connector(self, name: str, connector: BaseConnector):
         """Add a new connector"""

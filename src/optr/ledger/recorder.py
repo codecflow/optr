@@ -25,8 +25,8 @@ class Recorder:
         """
         self.storage_dir = Path(storage_dir or "./episodes")
         self.storage_dir.mkdir(parents=True, exist_ok=True)
-        self.current_episode = None
-        self.replay_callbacks = {}
+        self.current_episode: Episode | None = None
+        self.replay_callbacks: dict[str, Callable] = {}
 
     def start_recording(
         self, episode_id: str, metadata: dict[str, Any] | None = None
@@ -162,7 +162,7 @@ class Recorder:
         Returns:
             Replay results
         """
-        results = {
+        results: dict[str, Any] = {
             "total_steps": len(episode.steps),
             "executed_steps": 0,
             "skipped_steps": 0,
@@ -172,7 +172,7 @@ class Recorder:
         for step in episode.steps:
             # Skip error steps if requested
             if skip_errors and step.get("error"):
-                results["skipped_steps"] += 1
+                results["skipped_steps"] = results["skipped_steps"] + 1
                 continue
 
             action_type = step["action"]["type"]
@@ -182,16 +182,19 @@ class Recorder:
                 callback = self.replay_callbacks[action_type]
                 try:
                     # Recreate action
-                    action(action_type, **step["action"]["params"])
+                    action_params = step["action"].get("params", {})
+                    recreated_action = action(action_type, **action_params)
 
                     # Execute callback
-                    await callback(action)
-                    results["executed_steps"] += 1
+                    await callback(recreated_action)
+                    results["executed_steps"] = results["executed_steps"] + 1
 
                 except Exception as e:
-                    results["errors"].append({"step": step, "error": str(e)})
+                    errors_list = results["errors"]
+                    if isinstance(errors_list, list):
+                        errors_list.append({"step": step, "error": str(e)})
             else:
-                results["skipped_steps"] += 1
+                results["skipped_steps"] = results["skipped_steps"] + 1
 
         return results
 
@@ -205,7 +208,7 @@ class Recorder:
         Returns:
             Analysis results
         """
-        analysis = {
+        analysis: dict[str, Any] = {
             "duration": episode.get_duration(),
             "total_steps": episode.get_step_count(),
             "success_rate": episode.get_success_rate(),
@@ -215,19 +218,19 @@ class Recorder:
         }
 
         # Count action types
+        action_types: dict[str, int] = {}
         for step in episode.steps:
             action_type = step["action"]["type"]
-            analysis["action_types"][action_type] = (
-                analysis["action_types"].get(action_type, 0) + 1
-            )
+            action_types[action_type] = action_types.get(action_type, 0) + 1
+        analysis["action_types"] = action_types
 
         # Count error types
+        error_types: dict[str, int] = {}
         for step in episode.steps:
             if step.get("error"):
                 error = step["error"]
-                analysis["error_types"][error] = (
-                    analysis["error_types"].get(error, 0) + 1
-                )
+                error_types[error] = error_types.get(error, 0) + 1
+        analysis["error_types"] = error_types
 
         # Calculate average step duration
         if len(episode.steps) > 1:

@@ -118,9 +118,11 @@ class SimpleVLM(VLMInterface):
             word_tokens = word_tokens + [0] * (max_len - len(word_tokens))
             tokens.append(word_tokens[:max_len])
 
-        tokens = torch.tensor(tokens, dtype=torch.long).to(self._device)
+        tokens_tensor: torch.Tensor = torch.tensor(tokens, dtype=torch.long).to(
+            self._device
+        )
 
-        embedded = self.text_embedding(tokens)
+        embedded = self.text_embedding(tokens_tensor)
         output, (hidden, _) = self.text_encoder(embedded)
 
         # Use last hidden state from both directions

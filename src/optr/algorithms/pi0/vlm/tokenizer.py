@@ -123,16 +123,23 @@ class VLMTokenizer:
 
         # Convert to tensors if requested
         if return_tensors == "pt":
-            input_ids = torch.tensor(batch_tokens, dtype=torch.long)
-            attention_mask = torch.tensor(batch_masks, dtype=torch.long)
+            input_ids_tensor: torch.Tensor = torch.tensor(
+                batch_tokens, dtype=torch.long
+            )
+            attention_mask_tensor: torch.Tensor = torch.tensor(
+                batch_masks, dtype=torch.long
+            )
+            return {
+                "input_ids": input_ids_tensor,
+                "attention_mask": attention_mask_tensor,
+            }
         else:
-            input_ids = batch_tokens
-            attention_mask = batch_masks
-
-        return {
-            "input_ids": input_ids,
-            "attention_mask": attention_mask,
-        }
+            input_ids_list: list[list[int]] = batch_tokens
+            attention_mask_list: list[list[int]] = batch_masks
+            return {
+                "input_ids": input_ids_list,
+                "attention_mask": attention_mask_list,
+            }
 
     def decode(
         self,
@@ -160,12 +167,21 @@ class VLMTokenizer:
             else:
                 # Single sequence
                 return self._decode_single(token_ids.tolist(), skip_special_tokens)
-        elif isinstance(token_ids[0], list):
-            # Batch of sequences
-            return [self._decode_single(ids, skip_special_tokens) for ids in token_ids]
+        elif isinstance(token_ids, list):
+            if len(token_ids) > 0 and isinstance(token_ids[0], list):
+                # Batch of sequences - token_ids is list[list[int]]
+                batch_ids: list[list[int]] = token_ids  # type: ignore
+                return [
+                    self._decode_single(ids, skip_special_tokens) for ids in batch_ids
+                ]
+            else:
+                # Single sequence - token_ids is list[int]
+                single_ids: list[int] = token_ids  # type: ignore
+                return self._decode_single(single_ids, skip_special_tokens)
         else:
-            # Single sequence
-            return self._decode_single(token_ids, skip_special_tokens)
+            # Single token - convert to list[int]
+            single_token: int = token_ids  # type: ignore
+            return self._decode_single([single_token], skip_special_tokens)
 
     def _decode_single(
         self,

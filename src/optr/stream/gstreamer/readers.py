@@ -1,4 +1,3 @@
-import numpy as np
 from gi.repository import Gst
 
 from optr.core.io.protocols import Closer, Reader
@@ -7,7 +6,7 @@ from optr.stream.fps import FPS
 from . import buffer, caps, control, element, pipeline
 
 
-class VideoReader(Reader[np.ndarray], Closer):
+class VideoReader(Reader[bytes], Closer):
     """Base video reader implementing Reader and Closer protocols."""
 
     def __init__(self, pipe: Gst.Pipeline, appsink: Gst.Element):
@@ -15,7 +14,7 @@ class VideoReader(Reader[np.ndarray], Closer):
         self.appsink = appsink
         self.eos = False
 
-    def read(self) -> np.ndarray | None:
+    def read(self) -> bytes | None:
         """Read next frame, returns None when no more data."""
         if self.eos:
             return None
@@ -27,7 +26,7 @@ class VideoReader(Reader[np.ndarray], Closer):
 
     def close(self) -> None:
         """Close and cleanup resources."""
-        control.stop_sync(self.pipe)
+        control.play(self.pipe)
 
 
 class SHMReader(VideoReader):
@@ -38,7 +37,7 @@ class SHMReader(VideoReader):
         sink = element.appsink()
 
         pipe = pipeline.chain(src, sink, name="shm-reader")
-        control.play_sync(pipe)
+        control.play(pipe)
 
         super().__init__(pipe, sink)
 
@@ -66,7 +65,7 @@ class FileReader(VideoReader):
 
         pipeline.link(src, decoder)
         pipeline.link(convert, sink)
-        control.play_sync(pipe)
+        control.play(pipe)
 
         super().__init__(pipe, sink)
 
@@ -94,7 +93,7 @@ class RTMPReader(VideoReader):
 
         pipeline.link(src, decoder)
         pipeline.link(convert, sink)
-        control.play_sync(pipe)
+        control.play(pipe)
 
         super().__init__(pipe, sink)
 
@@ -112,7 +111,7 @@ class UDPReader(VideoReader):
         pipe = pipeline.chain(
             src, depayloader, decoder, convert, sink, name="udp-reader"
         )
-        control.play_sync(pipe)
+        control.play(pipe)
 
         super().__init__(pipe, sink)
 
@@ -140,6 +139,6 @@ class TestPatternReader(VideoReader):
         pipe = pipeline.chain(
             src, capsfilter, convert, sink, name="test-pattern-reader"
         )
-        control.play_sync(pipe)
+        control.play(pipe)
 
         super().__init__(pipe, sink)

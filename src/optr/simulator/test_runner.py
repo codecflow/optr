@@ -6,7 +6,7 @@ import time
 
 import pytest
 
-from .clock import Clock, Null
+from .clock import Null, RealTime
 from .runner import run
 
 
@@ -51,7 +51,7 @@ def test_runner_with_null_clock():
 def test_runner_with_realtime_clock():
     """Test runner with Clock FPS control"""
     sim = MockSimulator()
-    clock = Clock(fps=10, realtime=True)
+    clock = RealTime(fps=10, realtime=True)
 
     start_time = time.time()
     states = list(run(sim, steps=3, clock=clock))

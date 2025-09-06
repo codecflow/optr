@@ -6,16 +6,19 @@ import base64
 from typing import Any
 
 try:
-    from solana.keypair import Keypair
-    from solana.rpc.api import Client
-    from solana.transaction import Transaction
+    from solana.rpc.api import Client, Commitment
+    from solders.keypair import Keypair
+    from solders.message import Message
+    from solders.signature import Signature
+    from solders.system_program import TransferParams, transfer
+    from solders.transaction import Transaction
 except ImportError as e:
     raise ImportError("Install solana package: pip install 'optr[solana]'") from e
 
 
 def get_connection(
     rpc_url: str = "https://api.devnet.solana.com",
-    commitment: str = "confirmed",
+    commitment: Commitment = Commitment("confirmed"),
 ) -> Client:
     """
     Get RPC connection to Solana
@@ -59,20 +62,16 @@ def send_transaction(
 
     try:
         # Get recent blockhash
-        blockhash = client.get_recent_blockhash()["result"]["value"]["blockhash"]
-        transaction.recent_blockhash = blockhash
+        blockhash_resp = client.get_latest_blockhash()
+        blockhash = blockhash_resp.value.blockhash
 
-        # Sign transaction
-        transaction.sign(wallet)
+        # Create new transaction with proper signature
+        signed_tx = Transaction([wallet], transaction.message, blockhash)
 
         # Send transaction
-        response = client.send_transaction(transaction, wallet)
+        response = client.send_transaction(signed_tx)
 
-        if "result" in response:
-            return response["result"]
-        else:
-            print(f"Transaction failed: {response}")
-            return None
+        return str(response.value)
 
     except Exception as e:
         print(f"Error sending transaction: {e}")
@@ -101,28 +100,47 @@ def store_data(
     if len(data) > 1000:
         raise ValueError("Data too large. Use IPFS/Arweave for large data")
 
-    get_connection(rpc_url)
+    client = get_connection(rpc_url)
 
-    # For simplicity, using memo program
-    # In production, use custom program or compressed NFTs
-    from solana.transaction import Transaction
+    try:
+        # For simplicity, using memo program
+        # In production, use custom program or compressed NFTs
 
-    # Create memo instruction
+        # Encode data as base64 for memo
+        base64.b64encode(data).decode("utf-8")
 
-    # Encode data as base64 for memo
-    base64.b64encode(data).decode("utf-8")
+        # Create a simple transfer instruction as placeholder
+        # In production, use proper memo instruction
+        transfer_ix = transfer(
+            TransferParams(
+                from_pubkey=wallet.pubkey(),
+                to_pubkey=wallet.pubkey(),  # Self-transfer
+                lamports=0,
+            )
+        )
 
-    # Build transaction with memo
-    tx = Transaction()
+        # Build message with instructions
+        message = Message([transfer_ix], wallet.pubkey())
 
-    # Add memo instruction (simplified)
-    # In production, use proper instruction building
+        # Get recent blockhash
+        blockhash_resp = client.get_latest_blockhash()
+        blockhash = blockhash_resp.value.blockhash
 
-    return send_transaction(tx, wallet, rpc_url)
+        # Create transaction
+        tx = Transaction([wallet], message, blockhash)
+
+        # Send transaction
+        response = client.send_transaction(tx)
+
+        return str(response.value)
+
+    except Exception as e:
+        print(f"Error storing data: {e}")
+        return None
 
 
 def retrieve_data(
-    signature: str,
+    signature: Signature,
     rpc_url: str = "https://api.devnet.solana.com",
 ) -> bytes | None:
     """
@@ -145,12 +163,11 @@ def retrieve_data(
         # Get transaction
         response = client.get_transaction(signature)
 
-        if "result" not in response:
+        if response.value is None:
             return None
 
         # Extract memo data (simplified)
         # In production, parse properly
-        response["result"]
 
         # This is simplified - actual implementation would
         # parse transaction logs and extract memo data
@@ -215,16 +232,16 @@ def get_transaction_status(
     client = get_connection(rpc_url)
 
     try:
-        response = client.get_signature_statuses([signature])
+        sig_obj = Signature.from_string(signature)
+        response = client.get_signature_statuses([sig_obj])
 
-        if "result" in response and response["result"]["value"]:
-            status = response["result"]["value"][0]
-            if status:
-                return {
-                    "slot": status.get("slot"),
-                    "confirmations": status.get("confirmations"),
-                    "status": status.get("status"),
-                }
+        if response.value and response.value[0]:
+            status = response.value[0]
+            return {
+                "slot": status.slot if status.slot else None,
+                "confirmations": status.confirmations if status.confirmations else None,
+                "status": str(status.err) if status.err else "success",
+            }
 
         return None
 

@@ -4,6 +4,7 @@ Generic memory module for storing and retrieving information
 
 import time
 from collections import deque
+from collections.abc import Callable
 from typing import Any
 
 
@@ -21,10 +22,10 @@ class Memory:
             max_size: Maximum number of items to store (None for unlimited)
         """
         self.max_size = max_size
-        self.short_term = deque(maxlen=max_size)
-        self.long_term = {}
-        self.episodic = []
-        self.semantic = {}
+        self.short_term: deque[dict[str, Any]] = deque(maxlen=max_size)
+        self.long_term: dict[str, dict[str, Any]] = {}
+        self.episodic: list[dict[str, Any]] = []
+        self.semantic: dict[str, dict[str, Any]] = {}
 
     def store(
         self,
@@ -62,7 +63,7 @@ class Memory:
         self,
         key: str | None = None,
         memory_type: str = "short_term",
-        filter_func: callable | None = None,
+        filter_func: Callable[[dict[str, Any]], bool] | None = None,
     ) -> Any:
         """
         Retrieve information from memory
@@ -147,7 +148,7 @@ class Memory:
     def consolidate(
         self,
         threshold: float = 3600,  # 1 hour default
-        consolidator: callable | None = None,
+        consolidator: Callable[[dict[str, Any]], dict[str, Any] | None] | None = None,
     ):
         """
         Consolidate short-term memories to long-term
@@ -183,7 +184,7 @@ class Memory:
     def search(
         self,
         query: Any,
-        search_func: callable,
+        search_func: Callable[[dict[str, Any], Any], bool],
         memory_types: list[str] | None = None,
     ) -> list[Any]:
         """

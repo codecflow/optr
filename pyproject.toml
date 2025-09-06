@@ -40,8 +40,8 @@ exclude = ["examples/", "tests/", "uv.lock", "ruff.toml"]
 [tool.taskipy.tasks]
 format = "ruff format"
 check = "ruff check"
-typing = "mypy src"
-test = "pytest src -v -p no:anchorpy"
+typing = "mypy"
+test = "pytest"
 clean = "rm -rf .mypy_cache .pytest_cache .ruff_cache dist"
 
 [project.optional-dependencies]
@@ -49,18 +49,12 @@ desktop = ["mss", "pyautogui"]
 vision = ["opencv-python"]
 simulation = ["mujoco"]
 inference = ["onnxruntime"]
-training = ["torch"]
+training = ["torch", "torchvision", "transformers"]
 streaming = ["pygobject"]
 solana = ["solders", "solana", "anchorpy", "base58", "msgpack"]
 image = ["pillow", "imageio"]
 video = ["imageio[ffmpeg]"]
+ocr = ["pytesseract"]
 
 [dependency-groups]
 dev = ["mypy", "pytest", "ruff", "taskipy"]
-
-[tool.pytest.ini_options]
-addopts = "-p no:anchorpy -v"
-testpaths = ["src"]
-python_files = ["test_*.py", "*_test.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]

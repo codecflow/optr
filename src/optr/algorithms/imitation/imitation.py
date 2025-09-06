@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from ...operator.action import Action
+from ...operator.action import Action, action
 from ...operator.types import State
 from ..base import Algorithm
 
@@ -18,8 +18,8 @@ class Imitation(Algorithm):
 
     def __init__(self, config: dict[str, Any] | None = None):
         super().__init__(config)
-        self.demonstrations = []
-        self.policy = {}
+        self.demonstrations: list[dict[str, Any]] = []
+        self.policy: dict[str, Action] = {}
 
     async def predict(
         self, state: State, context: dict[str, Any] | None = None
@@ -48,7 +48,7 @@ class Imitation(Algorithm):
             return best_match["action"]
 
         # Default action if no match found
-        return Action(type="wait", params={})
+        return action("wait")
 
     async def train(
         self,
@@ -78,7 +78,10 @@ class Imitation(Algorithm):
 
         self.is_trained = True
 
-        metrics = {"demonstrations_count": len(data), "policy_size": len(self.policy)}
+        metrics: dict[str, Any] = {
+            "demonstrations_count": len(data),
+            "policy_size": len(self.policy),
+        }
 
         # Validate if data provided
         if validation_data:
@@ -97,8 +100,23 @@ class Imitation(Algorithm):
         save_path = Path(path)
         save_path.parent.mkdir(parents=True, exist_ok=True)
 
+        # Convert actions to serializable format
+        policy_data = {}
+        for k, v in self.policy.items():
+            if hasattr(v, "__dict__"):
+                policy_data[k] = v.__dict__
+            elif hasattr(v, "keys") and hasattr(v, "items"):
+                # Action is a dict-like object
+                try:
+                    policy_data[k] = dict(v.items())
+                except (AttributeError, TypeError):
+                    policy_data[k] = {"type": str(v)}
+            else:
+                # Fallback for other types
+                policy_data[k] = {"type": str(v)}
+
         data = {
-            "policy": {k: v.__dict__ for k, v in self.policy.items()},
+            "policy": policy_data,
             "config": self.config,
             "metadata": self.metadata,
         }
@@ -117,7 +135,9 @@ class Imitation(Algorithm):
         # Reconstruct policy
         self.policy = {}
         for k, v in data.get("policy", {}).items():
-            self.policy[k] = Action(**v)
+            action_type = v.get("type", "unknown")
+            params = {key: val for key, val in v.items() if key != "type"}
+            self.policy[k] = action(action_type, **params)
 
         self.is_trained = len(self.policy) > 0
 
@@ -134,8 +154,10 @@ class Imitation(Algorithm):
         target_key = self._state_to_key(state)
 
         for demo in self.demonstrations:
-            demo_key = self._state_to_key(demo.get("state"))
-            if demo_key == target_key:
-                return demo
+            demo_state = demo.get("state")
+            if demo_state is not None:
+                demo_key = self._state_to_key(demo_state)
+                if demo_key == target_key:
+                    return demo
 
         return None

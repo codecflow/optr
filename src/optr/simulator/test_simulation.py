@@ -64,7 +64,7 @@ def test_simulation_protocol_typing():
     class TypedSimulation:
         """Simulation with specific state type."""
 
-        def __init__(self):
+        def __init__(self) -> None:
             self.state: dict[str, int] = {"value": 42}
 
         def step(self) -> dict[str, int]:
