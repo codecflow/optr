@@ -8,9 +8,13 @@ on:
 jobs:
   lint:
     uses: ./.github/workflows/lint.yml
+    with:
+      priority: true
 
   test:
     uses: ./.github/workflows/test.yml
+    with:
+      priority: true
 
   publish:
     needs: [lint, test]

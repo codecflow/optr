@@ -6,10 +6,16 @@ on:
   pull_request:
     branches: [main]
   workflow_call:
+    inputs:
+      priority:
+        description: 'Run with priority (cancels other runs)'
+        type: boolean
+        default: false
+        required: false
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ inputs.priority && format('test-priority-{0}', github.sha) || format('test-{0}', github.ref) }}
+  cancel-in-progress: ${{ !inputs.priority }}
 
 jobs:
   test:
