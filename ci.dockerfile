@@ -16,4 +16,6 @@ RUN apt-get update && apt-get install -y \
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.cargo/bin:${PATH}"
 
+ENV MUJOCO_GL=egl
+
 WORKDIR /workspace
