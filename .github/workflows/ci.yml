@@ -2,6 +2,7 @@ name: Build CI Image
 
 on:
   push:
+    branches: [main]
     paths:
       - 'ci.dockerfile'
       - '.github/workflows/ci.yml'
