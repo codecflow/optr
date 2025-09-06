@@ -13,6 +13,7 @@ from .encoding import (
     AVDecH265,
     AVDecVP8,
     AVDecVP9,
+    AVEncAAC,
     DecodeBin,
     OpusDec,
     OpusEnc,
@@ -28,6 +29,7 @@ from .encoding import (
     avdec_h265,
     avdec_vp8,
     avdec_vp9,
+    avenc_aac,
     decodebin,
     opusdec,
     opusenc,
@@ -157,7 +159,7 @@ from .processing import (
 )
 
 # Test elements
-from .test import VideoTestSource, videotestsrc
+from .test import AudioTestSource, VideoTestSource, audiotestsrc, videotestsrc
 
 __all__ = [
     # Core
@@ -191,6 +193,7 @@ __all__ = [
     "avdec_vp8",
     "avdec_vp9",
     "aacenc",
+    "avenc_aac",
     "opusenc",
     "vorbisenc",
     "aacdec",
@@ -206,6 +209,7 @@ __all__ = [
     "AVDecVP8",
     "AVDecVP9",
     "AACEnc",
+    "AVEncAAC",
     "OpusEnc",
     "VorbisEnc",
     "AACDec",
@@ -308,6 +312,8 @@ __all__ = [
     "FileSource",
     "FileSink",
     # Test elements
+    "audiotestsrc",
     "videotestsrc",
+    "AudioTestSource",
     "VideoTestSource",
 ]

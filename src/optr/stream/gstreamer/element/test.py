@@ -17,3 +17,17 @@ def videotestsrc(
 ) -> Gst.Element:
     """Create videotestsrc with typed properties."""
     return create("videotestsrc", props, name)
+
+
+class AudioTestSource(TypedDict, total=False):
+    wave: str
+    freq: float
+    volume: float
+    samplesperbuffer: int
+
+
+def audiotestsrc(
+    *, name: str | None = None, **props: Unpack[AudioTestSource]
+) -> Gst.Element:
+    """Create audiotestsrc with typed properties."""
+    return create("audiotestsrc", props, name)
