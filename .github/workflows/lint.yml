@@ -6,40 +6,57 @@ on:
   pull_request:
     branches: [main]
   workflow_call:
-    inputs:
-      priority:
-        description: 'Run with priority (cancels other runs)'
-        type: boolean
-        default: false
-        required: false
 
+permissions:
+  contents: read
+
+# Simple, uniform concurrency: one in-flight run per ref (branch/PR/tag)
 concurrency:
-  group: ${{ inputs.priority && format('lint-priority-{0}', github.sha) || format('lint-{0}', github.ref) }}
-  cancel-in-progress: ${{ !inputs.priority }}
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     container:
       image: ghcr.io/${{ github.repository }}:ci
-    
+
     steps:
     - uses: actions/checkout@v5
-    
-    - name: Set up uv
+
+    - name: Set up UV
       uses: astral-sh/setup-uv@v6
       with:
         enable-cache: true
         cache-dependency-glob: "uv.lock"
-    
-    - name: Install dependencies
-      run: uv sync --group dev --all-extras
-    
+
+    - name: Cache VirtualEnv
+      id: venv
+      uses: actions/cache@v4
+      with:
+        path: .venv
+        key: venv-${{ runner.os }}-${{ hashFiles('uv.lock') }}
+
+    - name: Install Dependencies
+      if: steps.venv.outputs.cache-hit != 'true'
+      run: uv sync --group dev --all-extras --frozen
+
+    - name: Cache Analyzer
+      uses: actions/cache@v4
+      with:
+        path: |
+          .mypy_cache
+          .ruff_cache
+        key: lintcache-${{ runner.os }}-${{ github.ref }}
+        restore-keys: |
+          lintcache-${{ runner.os }}-
+
     - name: Check formatting
       run: uv run ruff format --check
-    
+
     - name: Run linter
-      run: uv run ruff check
-    
+      run: uv run ruff check --output-format=github
+
     - name: Run type checker
       run: uv run mypy src

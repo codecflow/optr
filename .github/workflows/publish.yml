@@ -2,40 +2,78 @@ name: Publish
 
 on:
   push:
-    tags:
-      - 'v*'
+    tags: ['v*']
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
+  precheck:
+    runs-on: ubuntu-latest
+    outputs:
+      lint_ok: ${{ steps.check.outputs.lint_ok }}
+      test_ok: ${{ steps.check.outputs.test_ok }}
+    steps:
+      - name: Check prior CI status (Lint/Test) for this tag's commit
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const tagName = context.ref.replace('refs/tags/', '');
+            // Resolve commit SHA reliably (handles annotated tags)
+            const refRes = await github.rest.git.getRef({ owner, repo, ref: `tags/${tagName}` });
+            let sha = refRes.data.object.sha;
+            if (refRes.data.object.type === 'tag') {
+              const tagObj = await github.rest.git.getTag({ owner, repo, tag_sha: sha });
+              sha = tagObj.data.object.sha;
+            }
+            const runs = await github.paginate(
+              github.rest.actions.listWorkflowRunsForRepo,
+              { owner, repo, head_sha: sha, per_page: 100 }
+            );
+            const ok = (n) => runs.some(r => r.name.toLowerCase() === n.toLowerCase() && r.conclusion === 'success');
+            core.setOutput('lint_ok', ok('Lint') ? 'true' : 'false');
+            core.setOutput('test_ok', ok('Test') ? 'true' : 'false');
+
   lint:
+    if: needs.precheck.outputs.lint_ok != 'true'
+    needs: precheck
     uses: ./.github/workflows/lint.yml
-    with:
-      priority: true
 
   test:
+    if: needs.precheck.outputs.test_ok != 'true'
+    needs: precheck
     uses: ./.github/workflows/test.yml
-    with:
-      priority: true
 
   publish:
-    needs: [lint, test]
+    needs: [precheck, lint, test]
+    if: |
+      (needs.precheck.outputs.lint_ok == 'true'  || needs.lint.result == 'success'  || needs.lint.result == 'skipped') &&
+      (needs.precheck.outputs.test_ok == 'true'  || needs.test.result == 'success'  || needs.test.result == 'skipped')
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     container:
       image: ghcr.io/${{ github.repository }}:ci
-    
+
     steps:
-    - uses: actions/checkout@v5
-    
-    - name: Set up uv
-      uses: astral-sh/setup-uv@v6
-      with:
-        enable-cache: true
-        cache-dependency-glob: "uv.lock"
-    
-    - name: Install dependencies
-      run: uv sync --group dev --all-extras
-    
-    - name: Build package
-      run: uv build
-    
-    - name: Publish to PyPI
-      run: uv publish --token ${{ secrets.PYPI_PUBLISH_TOKEN }}
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Set up UV
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Build package
+        run: uv build
+
+      - name: Publish to PyPI
+        run: uv publish --token ${{ secrets.PYPI_PUBLISH_TOKEN }}
