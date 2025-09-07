@@ -10,7 +10,6 @@ on:
 permissions:
   contents: read
 
-# Simple, uniform concurrency: one in-flight run per ref (branch/PR/tag)
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -52,11 +51,11 @@ jobs:
         restore-keys: |
           lintcache-${{ runner.os }}-
 
-    - name: Check formatting
+    - name: Check Formatting
       run: uv run ruff format --check
 
-    - name: Run linter
+    - name: Run Linter
       run: uv run ruff check --output-format=github
 
-    - name: Run type checker
+    - name: Run Type Checker
       run: uv run mypy src

@@ -2,7 +2,6 @@
 
 import tempfile
 import threading
-import time
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -10,7 +9,7 @@ import numpy as np
 import pytest
 
 from .recorder import Recorder
-from .test_helpers import create_test_frame, setup_temp_recorder, create_solid_frame
+from .test_helpers import create_test_frame
 
 
 class TestRecorderCore:
@@ -335,16 +334,19 @@ class TestRecorderEdgeCases:
 
         self.recorder.stop_recording(long_action_id)
 
-    @pytest.mark.parametrize("action_id", [
-        "action/with/slashes",
-        "action\\with\\backslashes", 
-        "action:with:colons",
-        "action*with*asterisks",
-        "action?with?questions",
-        "action<with>brackets",
-        "action|with|pipes",
-        'action"with"quotes',
-    ])
+    @pytest.mark.parametrize(
+        "action_id",
+        [
+            "action/with/slashes",
+            "action\\with\\backslashes",
+            "action:with:colons",
+            "action*with*asterisks",
+            "action?with?questions",
+            "action<with>brackets",
+            "action|with|pipes",
+            'action"with"quotes',
+        ],
+    )
     def test_special_characters_in_action_id(self, action_id):
         """Test handling of special characters in action ID."""
         # Should handle gracefully without crashing
@@ -356,11 +358,14 @@ class TestRecorderEdgeCases:
             # Some special characters may cause expected failures
             print(f"Expected failure for '{action_id}': {e}")
 
-    @pytest.mark.parametrize("frame_data", [
-        b"",  # Empty bytes
-        b"too_short",  # Too short
-        None,  # None type
-    ])
+    @pytest.mark.parametrize(
+        "frame_data",
+        [
+            b"",  # Empty bytes
+            b"too_short",  # Too short
+            None,  # None type
+        ],
+    )
     def test_malformed_frame_data(self, frame_data):
         """Test handling of malformed frame data."""
         action_id = "malformed_test"
@@ -489,12 +494,15 @@ class TestRecorderEdgeCases:
         # Recorder should still be functional
         assert not self.recorder.is_recording
 
-    @pytest.mark.parametrize("unicode_id", [
-        "测试_action",  # Chinese
-        "тест_action",  # Russian
-        "🎬_recording",  # Emoji
-        "café_action",  # Accented characters
-    ])
+    @pytest.mark.parametrize(
+        "unicode_id",
+        [
+            "测试_action",  # Chinese
+            "тест_action",  # Russian
+            "🎬_recording",  # Emoji
+            "café_action",  # Accented characters
+        ],
+    )
     def test_unicode_action_id(self, unicode_id):
         """Test handling of Unicode action IDs."""
         try:

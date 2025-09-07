@@ -6,7 +6,12 @@ import numpy as np
 import pytest
 
 from .recorder import Recorder
-from .test_helpers import create_test_frame, create_gradient_frame, create_random_frame, create_solid_frame
+from .test_helpers import (
+    create_gradient_frame,
+    create_random_frame,
+    create_solid_frame,
+    create_test_frame,
+)
 
 
 @pytest.mark.benchmark
@@ -125,11 +130,14 @@ class TestRecorderBenchmarks:
             action_id = f"benchmark_list_test_{i}"
             self.recorder.stop_recording(action_id)
 
-    @pytest.mark.parametrize("resolution", [
-        (320, 240),   # Small
-        (640, 480),   # Medium  
-        (1280, 720),  # HD
-    ])
+    @pytest.mark.parametrize(
+        "resolution",
+        [
+            (320, 240),  # Small
+            (640, 480),  # Medium
+            (1280, 720),  # HD
+        ],
+    )
     def test_benchmark_different_resolutions(self, benchmark, resolution):
         """Benchmark recording with different resolutions."""
         width, height = resolution
@@ -162,9 +170,7 @@ class TestRecorderBenchmarks:
     @pytest.mark.parametrize("fps", [24.0, 30.0, 60.0])
     def test_benchmark_different_fps_settings(self, benchmark, fps):
         """Benchmark recorder with different FPS settings."""
-        recorder = Recorder(
-            output_dir=self.temp_dir, width=640, height=480, fps=fps
-        )
+        recorder = Recorder(output_dir=self.temp_dir, width=640, height=480, fps=fps)
 
         try:
             action_id = f"benchmark_fps_{int(fps)}_test"
@@ -201,30 +207,36 @@ class TestFrameProcessingBenchmarks:
         """Benchmark test frame creation (baseline)."""
         benchmark(create_test_frame, 42)
 
-    @pytest.mark.parametrize("width,height", [
-        (320, 240),   # Small
-        (640, 480),   # Medium
-        (1280, 720),  # HD
-    ])
+    @pytest.mark.parametrize(
+        "width,height",
+        [
+            (320, 240),  # Small
+            (640, 480),  # Medium
+            (1280, 720),  # HD
+        ],
+    )
     def test_benchmark_frame_processing_by_size(self, benchmark, width, height):
         """Benchmark frame processing by size - frame operations only."""
+
         def process_frames():
             # Create frame data
             frame = np.zeros((height, width, 3), dtype=np.uint8)
             frame[:, :] = [128, 64, 192]  # Simple pattern
-            
+
             # Convert to bytes (what recorder.add_frame() receives)
             frame_bytes = frame.tobytes()
-            
+
             # Simulate frame validation (what recorder does internally)
             expected_size = width * height * 3
             if len(frame_bytes) != expected_size:
-                raise ValueError(f"Frame size mismatch: {len(frame_bytes)} != {expected_size}")
-            
+                raise ValueError(
+                    f"Frame size mismatch: {len(frame_bytes)} != {expected_size}"
+                )
+
             # Convert back to array (for processing)
             frame_array = np.frombuffer(frame_bytes, dtype=np.uint8)
             processed_frame = frame_array.reshape((height, width, 3))
-            
+
             return processed_frame.copy()
 
         benchmark(process_frames)
@@ -301,12 +313,15 @@ class TestFrameProcessingBenchmarks:
         width, height = 640, 480
 
         if pattern_type == "gradient":
+
             def create_frame():
                 return create_gradient_frame(width, height)
         elif pattern_type == "random":
+
             def create_frame():
                 return create_random_frame(width, height)
         else:  # solid
+
             def create_frame():
                 return create_solid_frame((128, 64, 192), width, height)
 

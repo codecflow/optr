@@ -72,7 +72,7 @@ jobs:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
 
-      - name: Build package
+      - name: Build Package
         run: uv build
 
       - name: Publish to PyPI

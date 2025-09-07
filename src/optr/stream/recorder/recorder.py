@@ -1,13 +1,13 @@
 """Simplified video recorder with clean API."""
 
 import time
+from collections.abc import Callable
 from pathlib import Path
-from typing import Dict, Optional, Union, List, Callable
 
 import numpy as np
 
-from .writer import Writer, MP4Writer
 from .queued_writer import QueuedWriter
+from .writer import MP4Writer, Writer
 
 
 class Recorder:
@@ -19,7 +19,7 @@ class Recorder:
         width: int = 1280,
         height: int = 720,
         fps: float = 24.0,
-        writer_factory: Optional[Callable[[Path], Writer]] = None,
+        writer_factory: Callable[[Path], Writer] | None = None,
     ):
         """Initialize recorder.
 
@@ -44,7 +44,7 @@ class Recorder:
         )
 
         # Active recordings: id -> (Writer, metadata)
-        self.recordings: Dict[str, tuple[Writer, dict]] = {}
+        self.recordings: dict[str, tuple[Writer, dict]] = {}
 
     def start(self, id: str) -> str:
         """Start recording.
@@ -80,7 +80,7 @@ class Recorder:
 
         return str(output_path)
 
-    def stop(self, id: str) -> Optional[str]:
+    def stop(self, id: str) -> str | None:
         """Stop recording.
 
         Args:
@@ -94,7 +94,7 @@ class Recorder:
 
         # Get the recording components
         writer, metadata = self.recordings.pop(id)
-        
+
         # Update metadata
         metadata["status"] = "completed"
         metadata["end_time"] = time.time()
@@ -105,7 +105,9 @@ class Recorder:
 
         return metadata["file_path"]
 
-    def write(self, id: str, frames: Union[bytes, np.ndarray, List[Union[bytes, np.ndarray]]]) -> bool:
+    def write(
+        self, id: str, frames: bytes | np.ndarray | list[bytes | np.ndarray]
+    ) -> bool:
         """Write frames to recording.
 
         Args:
@@ -191,7 +193,7 @@ class Recorder:
             print(f"Warning: Failed to delete recording {id}: {e}")
             return False
 
-    def status(self, id: str) -> Optional[dict]:
+    def status(self, id: str) -> dict | None:
         """Get recording status.
 
         Args:
@@ -204,20 +206,20 @@ class Recorder:
             return None
 
         writer, metadata = self.recordings[id]
-        
+
         status_info = metadata.copy()
-        
+
         if metadata["status"] == "recording":
             status_info["duration"] = time.time() - metadata["start_time"]
 
         # Add writer stats if available
-        if hasattr(writer, 'queued') and hasattr(writer, 'written'):
+        if hasattr(writer, "queued") and hasattr(writer, "written"):
             status_info["queued"] = writer.queued
             status_info["written"] = writer.written
 
         return status_info
 
-    def file(self, id: str) -> Optional[str]:
+    def file(self, id: str) -> str | None:
         """Get recording file path.
 
         Args:
@@ -236,25 +238,25 @@ class Recorder:
 
         return None
 
-    def list(self) -> Dict[str, dict]:
+    def list(self) -> dict[str, dict]:
         """List all active recordings.
 
         Returns:
             dict: Map of recording id to status information
         """
         result = {}
-        
+
         for id, (writer, metadata) in self.recordings.items():
             status_info = metadata.copy()
-            
+
             if metadata["status"] == "recording":
                 status_info["duration"] = time.time() - metadata["start_time"]
-            
+
             # Add writer stats if available
-            if hasattr(writer, 'queued') and hasattr(writer, 'written'):
+            if hasattr(writer, "queued") and hasattr(writer, "written"):
                 status_info["queued"] = writer.queued
                 status_info["written"] = writer.written
-            
+
             result[id] = status_info
 
         return result
