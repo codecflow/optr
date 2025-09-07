@@ -41,7 +41,8 @@ exclude = ["examples/", "tests/", "uv.lock", "ruff.toml"]
 format = "ruff format"
 check = "ruff check"
 typing = "mypy"
-test = "pytest"
+test = "pytest -m 'not benchmark'"
+bench = "pytest --benchmark-only"
 clean = "rm -rf .mypy_cache .pytest_cache .ruff_cache dist"
 
 [project.optional-dependencies]
@@ -57,4 +58,4 @@ video = ["imageio[ffmpeg]"]
 ocr = ["pytesseract"]
 
 [dependency-groups]
-dev = ["mypy", "pytest", "ruff", "taskipy"]
+dev = ["mypy", "pytest", "pytest-benchmark", "types-psutil", "ruff", "taskipy"]
