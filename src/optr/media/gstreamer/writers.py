@@ -1,7 +1,7 @@
 from gi.repository import Gst
 
 from optr.core.io.protocols import Closer, Writer
-from optr.stream.fps import FPS, ConvertibleToFPS
+from optr.media.fps import FPS, ConvertibleToFPS
 
 from . import buffer, caps, control, element, pipeline
 

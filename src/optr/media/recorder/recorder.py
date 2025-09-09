@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 
 from optr.core.io.writer import BackgroundWriter, Closable
-from optr.stream.mp4 import MP4Writer
+from optr.media.mp4 import MP4Writer
 
 
 class Recorder:

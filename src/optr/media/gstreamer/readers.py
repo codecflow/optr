@@ -1,7 +1,7 @@
 from gi.repository import Gst
 
 from optr.core.io.protocols import Closer, Reader
-from optr.stream.fps import FPS
+from optr.media.fps import FPS
 
 from . import buffer, caps, control, element, pipeline
 

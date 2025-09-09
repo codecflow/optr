@@ -10,3 +10,4 @@ reference
 .env
 .pytest_cache
 .mypy_cache
+.benchmarks

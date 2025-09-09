@@ -3,7 +3,7 @@ from typing import Required, TypedDict, Unpack
 
 from gi.repository import Gst
 
-from optr.stream.fps import FPS
+from optr.media.fps import FPS
 
 
 def create(type: str, props: Mapping[str, object] | None = None) -> Gst.Caps:
