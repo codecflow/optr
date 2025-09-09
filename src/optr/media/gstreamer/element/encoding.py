@@ -174,3 +174,14 @@ class VorbisDec(TypedDict, total=False):
 def vorbisdec(*, name: str | None = None, **props: Unpack[VorbisDec]) -> Gst.Element:
     """Create vorbisdec with typed properties."""
     return create("vorbisdec", props, name=name)
+
+
+class AVEncAAC(TypedDict, total=False):
+    bitrate: int
+    compliance: str
+
+
+def avenc_aac(*, name: str | None = None, **props: Unpack[AVEncAAC]) -> Gst.Element:
+    """Create avenc_aac with typed properties."""
+    props.setdefault("bitrate", 128000)
+    return create("avenc_aac", props, name=name)
