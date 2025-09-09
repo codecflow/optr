@@ -6,8 +6,8 @@ from pathlib import Path
 
 import numpy as np
 
-from .queued_writer import QueuedWriter
-from .writer import MP4Writer, Writer
+from optr.core.io.writer import BackgroundWriter, Closable
+from optr.stream.mp4 import MP4Writer
 
 
 class Recorder:
@@ -19,7 +19,7 @@ class Recorder:
         width: int = 1280,
         height: int = 720,
         fps: float = 24.0,
-        writer_factory: Callable[[Path], Writer] | None = None,
+        writer_factory: Callable[[Path], Closable] | None = None,
     ):
         """Initialize recorder.
 
@@ -28,7 +28,7 @@ class Recorder:
             width: Frame width
             height: Frame height
             fps: Frames per second
-            writer_factory: Factory function to create writers (defaults to QueuedWriter(MP4Writer))
+            writer_factory: Factory function to create writers (defaults to BackgroundWriter(MP4Writer))
         """
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -38,13 +38,13 @@ class Recorder:
         self.height = height
         self.fps = fps
 
-        # Writer factory - defaults to queued MP4 writer for non-blocking writes
+        # Writer factory - defaults to background MP4 writer for non-blocking writes
         self.writer_factory = writer_factory or (
-            lambda path: QueuedWriter(MP4Writer(path, width, height, fps))
+            lambda path: BackgroundWriter(MP4Writer(path, width, height, fps))
         )
 
         # Active recordings: id -> (Writer, metadata)
-        self.recordings: dict[str, tuple[Writer, dict]] = {}
+        self.recordings: dict[str, tuple[Closable, dict]] = {}
 
     def start(self, id: str) -> str:
         """Start recording.

@@ -1,199 +1,225 @@
-"""Consolidated benchmarks for the queue-based recorder."""
+"""Optimized benchmarks for recorder - only meaningful performance tests."""
 
 import tempfile
+import time
+from pathlib import Path
 
-import numpy as np
 import pytest
 
 from .recorder import Recorder
-from .test_helpers import (
-    create_gradient_frame,
-    create_random_frame,
-    create_solid_frame,
-    create_test_frame,
-)
+from .test_helpers import create_solid_frame, create_test_frame
 
 
 @pytest.mark.benchmark
-class TestRecorderBenchmarks:
-    """Core recorder operation benchmarks."""
+class TestRecorderPerformance:
+    """Performance benchmarks for real-world recorder usage."""
 
     def setup_method(self):
         """Set up test fixtures."""
         self.temp_dir = tempfile.mkdtemp()
-        self.recorder = Recorder(
-            output_dir=self.temp_dir, width=640, height=480, fps=30.0
-        )
 
     def teardown_method(self):
         """Clean up after tests."""
-        if hasattr(self, "recorder") and self.recorder:
+        # Clean up any test files
+        for file_path in Path(self.temp_dir).glob("*.mp4"):
             try:
-                self.recorder.close()
-            except Exception as e:
-                print(f"Warning: Error during recorder cleanup: {e}")
-            finally:
-                self.recorder = None
+                file_path.unlink()
+            except Exception:
+                pass
 
-    def test_benchmark_frame_addition(self, benchmark):
-        """Benchmark single frame addition performance."""
-        action_id = "benchmark_frame_test"
-        self.recorder.start_recording(action_id)
+    def test_benchmark_real_mp4_encoding_throughput(self, benchmark):
+        """Benchmark actual MP4 encoding performance with real writer."""
+        recorder = Recorder(
+            output_dir=self.temp_dir,
+            width=640,
+            height=480,
+            fps=30.0,
+            # Use default factory (BackgroundWriter + MP4Writer)
+        )
 
-        frame_bytes = create_test_frame()
+        try:
+            action_id = "mp4_throughput_test"
+            num_frames = 30  # 1 second at 30fps
 
-        # Benchmark the frame addition
-        benchmark(self.recorder.add_frame, frame_bytes)
+            # Pre-create frames to isolate encoding performance
+            frames = []
+            for i in range(num_frames):
+                frame = create_solid_frame(
+                    (i * 8 % 256, 128, 255 - i * 8 % 256), width=640, height=480
+                )
+                frames.append(frame)
 
-        self.recorder.stop_recording(action_id)
+            def encode_video():
+                recorder.start(action_id)
+                for frame_bytes in frames:
+                    recorder.write(action_id, frame_bytes)
+                final_path = recorder.stop(action_id)
 
-    def test_benchmark_start_recording(self, benchmark):
-        """Benchmark recording start performance."""
-        action_id = "benchmark_start_test"
+                # Verify file was actually created
+                if final_path and Path(final_path).exists():
+                    return Path(final_path).stat().st_size
+                return 0
 
-        def start_recording():
-            self.recorder.start_recording(action_id)
-            # Clean up for next iteration
-            if self.recorder.is_recording:
-                self.recorder.stop_recording(action_id)
+            file_size = benchmark(encode_video)
 
-        benchmark(start_recording)
+            # Verify we actually encoded something
+            assert file_size > 0, "No MP4 file was created"
 
-    def test_benchmark_stop_recording(self, benchmark):
-        """Benchmark recording stop performance."""
-        action_id = "benchmark_stop_test"
+        finally:
+            recorder.close()
 
-        def stop_recording():
-            # Start recording first
-            self.recorder.start_recording(action_id)
-            # Add a frame to make it realistic
-            frame_bytes = create_test_frame()
-            self.recorder.add_frame(frame_bytes)
-            # Benchmark the stop operation
-            self.recorder.stop_recording(action_id)
+    def test_benchmark_sustained_write_performance(self, benchmark):
+        """Benchmark sustained write performance over longer duration."""
+        recorder = Recorder(
+            output_dir=self.temp_dir,
+            width=320,
+            height=240,
+            fps=30.0,
+        )
 
-        benchmark(stop_recording)
+        try:
+            action_id = "sustained_write_test"
+            num_frames = 150  # 5 seconds at 30fps
 
-    def test_benchmark_recording_lifecycle(self, benchmark):
-        """Benchmark complete recording lifecycle."""
-        action_id = "benchmark_lifecycle_test"
+            # Create varied frames to simulate real usage
+            frames = []
+            for i in range(num_frames):
+                # Alternate between different patterns
+                if i % 3 == 0:
+                    frame = create_solid_frame((255, 0, 0), width=320, height=240)
+                elif i % 3 == 1:
+                    frame = create_solid_frame((0, 255, 0), width=320, height=240)
+                else:
+                    frame = create_test_frame(i, width=320, height=240)
+                frames.append(frame)
 
-        def recording_lifecycle():
-            self.recorder.start_recording(action_id)
+            def sustained_recording():
+                recorder.start(action_id)
 
-            # Add 10 frames
-            for i in range(10):
-                frame_bytes = create_test_frame(i)
-                self.recorder.add_frame(frame_bytes)
+                start_time = time.time()
+                for frame_bytes in frames:
+                    recorder.write(action_id, frame_bytes)
+                write_duration = time.time() - start_time
 
-            self.recorder.stop_recording(action_id)
+                recorder.stop(action_id)
 
-        benchmark(recording_lifecycle)
+                # Return frames per second achieved
+                return len(frames) / write_duration if write_duration > 0 else 0
 
-    def test_benchmark_concurrent_frame_addition(self, benchmark):
-        """Benchmark concurrent frame additions."""
-        action_id = "benchmark_concurrent_test"
-        self.recorder.start_recording(action_id)
+            fps_achieved = benchmark(sustained_recording)
 
-        frames = [create_test_frame(i) for i in range(5)]
+            # Should achieve reasonable throughput
+            assert fps_achieved > 10, f"Too slow: {fps_achieved:.1f} fps"
 
-        def add_multiple_frames():
-            for frame_bytes in frames:
-                self.recorder.add_frame(frame_bytes)
-
-        benchmark(add_multiple_frames)
-
-        self.recorder.stop_recording(action_id)
-
-    def test_benchmark_get_recording_status(self, benchmark):
-        """Benchmark recording status retrieval."""
-        action_id = "benchmark_status_test"
-        self.recorder.start_recording(action_id)
-
-        benchmark(self.recorder.get_recording_status, action_id)
-
-        self.recorder.stop_recording(action_id)
-
-    def test_benchmark_list_recordings(self, benchmark):
-        """Benchmark listing all recordings."""
-        # Create multiple recordings
-        for i in range(5):
-            action_id = f"benchmark_list_test_{i}"
-            self.recorder.start_recording(action_id)
-            frame_bytes = create_test_frame(i)
-            self.recorder.add_frame(frame_bytes)
-
-        benchmark(self.recorder.list_recordings)
-
-        # Clean up
-        for i in range(5):
-            action_id = f"benchmark_list_test_{i}"
-            self.recorder.stop_recording(action_id)
+        finally:
+            recorder.close()
 
     @pytest.mark.parametrize(
         "resolution",
         [
-            (320, 240),  # Small
-            (640, 480),  # Medium
-            (1280, 720),  # HD
+            (320, 240),  # Small - baseline
+            (640, 480),  # Medium - common
+            (1280, 720),  # HD - performance test
         ],
     )
-    def test_benchmark_different_resolutions(self, benchmark, resolution):
-        """Benchmark recording with different resolutions."""
+    def test_benchmark_resolution_encoding_performance(self, benchmark, resolution):
+        """Benchmark encoding performance across different resolutions."""
         width, height = resolution
         recorder = Recorder(
-            output_dir=self.temp_dir, width=width, height=height, fps=30.0
+            output_dir=self.temp_dir,
+            width=width,
+            height=height,
+            fps=30.0,
         )
 
         try:
-            action_id = f"benchmark_resolution_{width}x{height}_test"
-            num_frames = 20
+            action_id = f"resolution_{width}x{height}_test"
+            # Scale frame count by resolution to keep test duration reasonable
+            base_frames = 30
+            scale_factor = (width * height) / (320 * 240)
+            num_frames = max(10, int(base_frames / scale_factor))
 
-            # Pre-create frames
+            # Create frames with actual content
             frames = []
             for i in range(num_frames):
-                frame = np.zeros((height, width, 3), dtype=np.uint8)
-                frame[:, :] = [i % 256, (i * 2) % 256, (i * 3) % 256]
-                frames.append(frame.tobytes())
+                frame = create_solid_frame(
+                    (i * 10 % 256, 128, 255 - i * 10 % 256), width=width, height=height
+                )
+                frames.append(frame)
 
-            def record_frames():
-                recorder.start_recording(action_id)
+            def encode_at_resolution():
+                recorder.start(action_id)
                 for frame_bytes in frames:
-                    recorder.add_frame(frame_bytes)
-                recorder.stop_recording(action_id)
+                    recorder.write(action_id, frame_bytes)
+                final_path = recorder.stop(action_id)
 
-            benchmark(record_frames)
+                # Return encoding rate (pixels per second)
+                if final_path and Path(final_path).exists():
+                    return width * height * num_frames
+                return 0
+
+            pixels_encoded = benchmark(encode_at_resolution)
+            assert pixels_encoded > 0, f"Failed to encode {width}x{height}"
 
         finally:
             recorder.close()
 
-    @pytest.mark.parametrize("fps", [24.0, 30.0, 60.0])
-    def test_benchmark_different_fps_settings(self, benchmark, fps):
-        """Benchmark recorder with different FPS settings."""
-        recorder = Recorder(output_dir=self.temp_dir, width=640, height=480, fps=fps)
+    def test_benchmark_concurrent_recording_performance(self, benchmark):
+        """Benchmark performance with multiple concurrent recordings."""
+        recorder = Recorder(
+            output_dir=self.temp_dir,
+            width=320,
+            height=240,
+            fps=30.0,
+        )
 
         try:
-            action_id = f"benchmark_fps_{int(fps)}_test"
+            num_recordings = 3
+            frames_per_recording = 20
 
-            def test_fps_recording():
-                recorder.start_recording(action_id)
+            # Pre-create frames for each recording
+            all_frames = {}
+            for recording_id in range(num_recordings):
+                frames = []
+                for frame_num in range(frames_per_recording):
+                    # Different color per recording
+                    color = (recording_id * 80 % 256, 128, frame_num * 10 % 256)
+                    frame = create_solid_frame(color, width=320, height=240)
+                    frames.append(frame)
+                all_frames[f"concurrent_{recording_id}"] = frames
 
-                # Add 10 frames
-                for i in range(10):
-                    frame_bytes = create_test_frame(i)
-                    recorder.add_frame(frame_bytes)
+            def concurrent_recordings():
+                # Start all recordings
+                for recording_id in all_frames.keys():
+                    recorder.start(recording_id)
 
-                recorder.stop_recording(action_id)
+                # Write frames to all recordings
+                for frame_idx in range(frames_per_recording):
+                    for recording_id, frames in all_frames.items():
+                        recorder.write(recording_id, frames[frame_idx])
 
-            benchmark(test_fps_recording)
+                # Stop all recordings
+                final_paths = []
+                for recording_id in all_frames.keys():
+                    path = recorder.stop(recording_id)
+                    if path and Path(path).exists():
+                        final_paths.append(path)
+
+                return len(final_paths)
+
+            files_created = benchmark(concurrent_recordings)
+            assert files_created == num_recordings, (
+                f"Only {files_created}/{num_recordings} files created"
+            )
 
         finally:
             recorder.close()
 
 
 @pytest.mark.benchmark
-class TestFrameProcessingBenchmarks:
-    """Frame creation and processing benchmarks."""
+@pytest.mark.slow
+class TestRecorderMemoryPerformance:
+    """Memory and resource usage benchmarks."""
 
     def setup_method(self):
         """Set up test fixtures."""
@@ -201,158 +227,85 @@ class TestFrameProcessingBenchmarks:
 
     def teardown_method(self):
         """Clean up after tests."""
-        pass
+        for file_path in Path(self.temp_dir).glob("*.mp4"):
+            try:
+                file_path.unlink()
+            except Exception:
+                pass
 
-    def test_benchmark_frame_creation_baseline(self, benchmark):
-        """Benchmark test frame creation (baseline)."""
-        benchmark(create_test_frame, 42)
-
-    @pytest.mark.parametrize(
-        "width,height",
-        [
-            (320, 240),  # Small
-            (640, 480),  # Medium
-            (1280, 720),  # HD
-        ],
-    )
-    def test_benchmark_frame_processing_by_size(self, benchmark, width, height):
-        """Benchmark frame processing by size - frame operations only."""
-
-        def process_frames():
-            # Create frame data
-            frame = np.zeros((height, width, 3), dtype=np.uint8)
-            frame[:, :] = [128, 64, 192]  # Simple pattern
-
-            # Convert to bytes (what recorder.add_frame() receives)
-            frame_bytes = frame.tobytes()
-
-            # Simulate frame validation (what recorder does internally)
-            expected_size = width * height * 3
-            if len(frame_bytes) != expected_size:
-                raise ValueError(
-                    f"Frame size mismatch: {len(frame_bytes)} != {expected_size}"
-                )
-
-            # Convert back to array (for processing)
-            frame_array = np.frombuffer(frame_bytes, dtype=np.uint8)
-            processed_frame = frame_array.reshape((height, width, 3))
-
-            return processed_frame.copy()
-
-        benchmark(process_frames)
-
-    def test_benchmark_frame_conversion(self, benchmark):
-        """Benchmark frame data conversion from bytes to numpy array."""
-        width, height = 640, 480
-        frame_size = width * height * 3
-
-        # Create test frame bytes
-        frame_bytes = np.random.randint(0, 256, frame_size, dtype=np.uint8).tobytes()
-
-        def convert_frame():
-            frame_array = np.frombuffer(frame_bytes, dtype=np.uint8)
-            frame = frame_array.reshape((height, width, 3))
-            return frame.copy()
-
-        benchmark(convert_frame)
-
-    def test_benchmark_gradient_frame_creation(self, benchmark):
-        """Benchmark gradient frame creation."""
-        benchmark(create_gradient_frame)
-
-    def test_benchmark_gradient_frame_creation_vectorized(self, benchmark):
-        """Benchmark vectorized gradient frame creation."""
-        width, height = 640, 480
-
-        def create_vectorized_frame():
-            # Create gradient using vectorized operations
-            y_gradient = np.linspace(0, 255, height, dtype=np.uint8)
-            frame = np.zeros((height, width, 3), dtype=np.uint8)
-            frame[:, :, 0] = y_gradient[:, np.newaxis]
-            frame[:, :, 1] = 255 - y_gradient[:, np.newaxis]
-            frame[:, :, 2] = y_gradient[:, np.newaxis] // 2
-            return frame.tobytes()
-
-        benchmark(create_vectorized_frame)
-
-    def test_benchmark_random_frame_creation(self, benchmark):
-        """Benchmark random frame creation."""
-        benchmark(create_random_frame)
-
-    def test_benchmark_solid_frame_creation(self, benchmark):
-        """Benchmark solid color frame creation."""
-        benchmark(create_solid_frame)
-
-    def test_benchmark_frame_memory_copy(self, benchmark):
-        """Benchmark frame memory copy operations."""
-        width, height = 640, 480
-
-        # Create source frame
-        source_frame = np.random.randint(0, 256, (height, width, 3), dtype=np.uint8)
-
-        def copy_frame():
-            return source_frame.copy()
-
-        benchmark(copy_frame)
-
-    def test_benchmark_frame_serialization(self, benchmark):
-        """Benchmark frame serialization to bytes."""
-        width, height = 640, 480
-
-        # Create source frame
-        source_frame = np.random.randint(0, 256, (height, width, 3), dtype=np.uint8)
-
-        def serialize_frame():
-            return source_frame.tobytes()
-
-        benchmark(serialize_frame)
-
-    @pytest.mark.parametrize("pattern_type", ["gradient", "random", "solid"])
-    def test_benchmark_frame_patterns(self, benchmark, pattern_type):
-        """Benchmark different frame creation patterns."""
-        width, height = 640, 480
-
-        if pattern_type == "gradient":
-
-            def create_frame():
-                return create_gradient_frame(width, height)
-        elif pattern_type == "random":
-
-            def create_frame():
-                return create_random_frame(width, height)
-        else:  # solid
-
-            def create_frame():
-                return create_solid_frame((128, 64, 192), width, height)
-
-        benchmark(create_frame)
-
-    @pytest.mark.slow
-    def test_benchmark_4k_frame_processing(self, benchmark):
-        """Benchmark processing of 4K frames (3840x2160)."""
-        recorder = Recorder(output_dir=self.temp_dir, width=3840, height=2160, fps=30.0)
+    def test_benchmark_memory_usage_large_recording(self, benchmark):
+        """Benchmark memory efficiency with large recording."""
+        recorder = Recorder(
+            output_dir=self.temp_dir,
+            width=640,
+            height=480,
+            fps=30.0,
+        )
 
         try:
-            action_id = "benchmark_4k_frame_test"
-            num_frames = 10  # Fewer frames for 4K due to size
+            action_id = "memory_test"
+            num_frames = 300  # 10 seconds at 30fps
 
-            # Pre-create frames
+            def large_recording():
+                recorder.start(action_id)
+
+                # Generate frames on-the-fly to test memory efficiency
+                for i in range(num_frames):
+                    # Create frame without storing in memory
+                    frame = create_test_frame(i, width=640, height=480)
+                    recorder.write(action_id, frame)
+
+                final_path = recorder.stop(action_id)
+
+                if final_path and Path(final_path).exists():
+                    return Path(final_path).stat().st_size
+                return 0
+
+            file_size = benchmark(large_recording)
+            assert file_size > 0, "Large recording failed"
+
+        finally:
+            recorder.close()
+
+    def test_benchmark_hd_encoding_performance(self, benchmark):
+        """Benchmark HD resolution encoding performance."""
+        recorder = Recorder(
+            output_dir=self.temp_dir,
+            width=1280,
+            height=720,
+            fps=30.0,
+        )
+
+        try:
+            action_id = "hd_performance_test"
+            num_frames = 60  # 2 seconds at 30fps
+
+            # Pre-create HD frames
             frames = []
             for i in range(num_frames):
-                frame = np.zeros((2160, 3840, 3), dtype=np.uint8)
-                # Create gradient pattern
-                for row in range(2160):
-                    intensity = int(255 * row / 2160)
-                    frame[row, :] = (intensity, (intensity + i) % 256, 255 - intensity)
-                frames.append(frame.tobytes())
+                frame = create_solid_frame(
+                    (i * 4 % 256, 128, 255 - i * 4 % 256), width=1280, height=720
+                )
+                frames.append(frame)
 
-            def process_4k_frames():
-                recorder.start_recording(action_id)
+            def hd_encoding():
+                recorder.start(action_id)
+
+                start_time = time.time()
                 for frame_bytes in frames:
-                    recorder.add_frame(frame_bytes)
-                recorder.stop_recording(action_id)
+                    recorder.write(action_id, frame_bytes)
+                encoding_time = time.time() - start_time
 
-            benchmark(process_4k_frames)
+                final_path = recorder.stop(action_id)
+
+                # Return megapixels per second
+                if final_path and Path(final_path).exists():
+                    megapixels = (1280 * 720 * num_frames) / 1_000_000
+                    return megapixels / encoding_time if encoding_time > 0 else 0
+                return 0
+
+            mp_per_second = benchmark(hd_encoding)
+            assert mp_per_second > 0, "HD encoding failed"
 
         finally:
             recorder.close()

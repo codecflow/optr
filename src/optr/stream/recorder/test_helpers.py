@@ -4,8 +4,6 @@ import tempfile
 
 import numpy as np
 
-from .recorder import Recorder
-
 
 def create_test_frame(frame_num=0, width=640, height=480):
     """Create a test frame with specific pattern.
@@ -36,6 +34,8 @@ def setup_temp_recorder(temp_dir=None, **kwargs):
     Returns:
         tuple: (recorder, temp_dir)
     """
+    from .recorder import Recorder
+
     if temp_dir is None:
         temp_dir = tempfile.mkdtemp()
 

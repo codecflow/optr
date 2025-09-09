@@ -1,23 +1,14 @@
 """Video writers for the recorder."""
 
 from pathlib import Path
-from typing import Protocol
 
 import imageio
 import numpy as np
 
-from optr.core.io import protocols
+from optr.core.io.writer import Closable
 
 
-class Writer[T](protocols.Writer[T], protocols.Closer, Protocol):
-    """Writer protocol for writing frames of type T."""
-
-    def write(self, frame: T) -> None:
-        """Write a frame."""
-        ...
-
-
-class MP4Writer(Writer[np.ndarray]):
+class MP4Writer(Closable[np.ndarray]):
     """MP4 video writer using imageio."""
 
     def __init__(
