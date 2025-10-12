@@ -19,7 +19,7 @@ A unified Python framework for building, training, and deploying intelligent ope
 ## Key Features
 
 - **Desktop Automation** - Click, type, and interact with GUI elements
-- **Robot Control** - MuJoCo simulation and physical robot support
+- **Robot Control** - MuJoCo simulation and physical robot support (Brewie)
 - **Learning Algorithms** - Imitation learning, Pi0, and custom algorithms
 - **Episode Recording** - Capture and replay operator sequences
 - **Modular Connectors** - Extensible interface for any environment
@@ -31,6 +31,21 @@ A unified Python framework for building, training, and deploying intelligent ope
 ### Basic Install
 ```bash
 pip install optr
+```
+
+### With Optional Dependencies
+```bash
+# Desktop automation
+pip install optr[desktop]
+
+# MuJoCo simulation
+pip install optr[simulation]
+
+# Physical robot control (Brewie)
+pip install optr[robot]
+
+# All features
+pip install optr[desktop,simulation,robot]
 ```
 
 ### Development Install (using uv)
@@ -71,12 +86,12 @@ async def login_operator():
     return op
 ```
 
-### Robot Control (MuJoCo)
+### Robot Control (MuJoCo Simulation)
 
 Control a simulated robot:
 
 ```python
-# my_app/operators/robot.py
+# my_app/operators/robot_sim.py
 
 from optr.operator import Operator
 from optr.simulator.mujoco import MuJoCoSimulation
@@ -94,6 +109,40 @@ async def robot_operator():
     await op.execute_action("grasp", 
                            connector_name="robot",
                            force=10.0)
+    
+    return op
+```
+
+### Physical Robot Control (Brewie)
+
+Control a physical Brewie robot:
+
+```python
+# my_app/operators/brewie_robot.py
+
+from optr.operator import Operator
+from optr.connector.robot import BrewieRobot
+
+async def brewie_operator():
+    # Initialize Brewie robot connector
+    robot = BrewieRobot(host="192.168.1.100", port=9090)
+    op = Operator({"brewie": robot})
+    
+    # Connect to robot
+    await op.execute_action("connect", connector_name="brewie")
+    
+    # Get current robot state
+    state = await op.get_state("brewie")
+    print(f"Joint positions: {state.metadata['joint_positions']}")
+    
+    # Move robot joints to target positions
+    await op.execute_action("move",
+                           connector_name="brewie",
+                           positions={13: 800, 14: 200, 15: 700},
+                           duration=2.0)
+    
+    # Disconnect
+    await op.execute_action("disconnect", connector_name="brewie")
     
     return op
 ```

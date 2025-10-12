@@ -49,6 +49,7 @@ clean = "rm -rf .mypy_cache .pytest_cache .ruff_cache dist"
 desktop = ["mss", "pyautogui", "types-pyautogui"]
 vision = ["opencv-python"]
 simulation = ["mujoco"]
+robot = ["roslibpy"]
 inference = ["onnxruntime"]
 training = ["torch", "torchvision", "transformers"]
 streaming = ["pygobject"]
